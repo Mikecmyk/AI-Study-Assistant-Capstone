@@ -1,8 +1,12 @@
-# study_core/urls.py
+
 
 from django.urls import path
-from . import views
+from .views import StudySessionListCreateView, StudyTopicListView
 
 urlpatterns = [
-    # This list is currently empty, but we will add our API paths here soon.
+    
+    path('topics/', StudyTopicListView.as_view(), name='topic-list'),
+    
+    
+    path('sessions/', StudySessionListCreateView.as_view(), name='session-list-create'),
 ]
