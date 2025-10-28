@@ -1,0 +1,16 @@
+# Python/Django specific
+*.pyc
+*~
+__pycache__
+myvenv
+backend_venv  # Your virtual environment folder
+db.sqlite3    # Your local database file
+.DS_Store
+
+# IDE/OS specific
+.vscode/
+*.sublime-workspace
+
+# Frontend (React) specific
+/frontend/node_modules
+/frontend/build
