@@ -9,10 +9,22 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user'); // Optional, helpful for display
+    
+    if (token && storedUser) {
+        // Here you could make a quick API call to verify the token is still valid
+        // For simplicity, we assume the token is valid if it exists.
+        setIsAuthenticated(true);
+        setUser(storedUser);
+    }
+  }, []);
   
   const handleAuthSuccess = (authData) => {
     
     console.log("Authentication successful! Data:", authData);
+    localStorage.setItem('user', authData.user);
     
     
     setIsAuthenticated(true);
@@ -22,6 +34,9 @@ function App() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+
     
     setIsAuthenticated(false);
     setUser(null);
