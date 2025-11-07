@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import './App.css'; 
-import Auth from './components/Auth'; 
+import Auth from './components/Auth';
+import Dashboard from './components/Dashboard';
 
 function App() {
   
@@ -60,10 +61,7 @@ function App() {
           <Auth onAuth={handleAuthSuccess} />
         ) : (
           
-          <div>
-            <h2>Welcome to your Dashboard, {user}!</h2>
-            <p>Here you will generate your study plans and review history.</p>
-          </div>
+          <Dashboard />
         )}
       </main>
     </div>
