@@ -1,6 +1,6 @@
 // frontend/src/App.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css'; 
 import Auth from './components/Auth'; 
 
@@ -37,7 +37,7 @@ function App() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
 
-    
+
     setIsAuthenticated(false);
     setUser(null);
   };
