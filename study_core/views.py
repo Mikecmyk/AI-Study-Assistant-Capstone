@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from .models import StudySession, StudyTopic
 from .serializers import StudySessionSerializer, StudyTopicSerializer
 from django.shortcuts import get_object_or_404 
+from django.views.decorators.csrf import csrf_exempt # 1. IMPORT THIS
+from django.utils.decorators import method_decorator # 2. IMPORT THIS
 
 class StudySessionListCreateView(generics.ListCreateAPIView):
     serializer_class = StudySessionSerializer
@@ -33,3 +35,11 @@ class StudyTopicListView(generics.ListAPIView):
     queryset = StudyTopic.objects.all()
     serializer_class = StudyTopicSerializer
     permission_classes = [permissions.AllowAny]
+
+
+@method_decorator(csrf_exempt, name='dispatch') 
+class StudySessionListCreateView(generics.ListCreateAPIView):
+    # ... (rest of the class remains the same)
+    queryset = StudySession.objects.all()
+    serializer_class = StudySessionSerializer
+    permission_classes = [permissions.IsAuthenticated]
