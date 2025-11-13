@@ -1,26 +1,16 @@
-// frontend/src/setupProxy.js (FINAL STATIC FILE FIX)
-
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
-  
-  // This array defines the paths that SHOULD NOT be proxied to Django.
-  const shouldNotProxy = [
-    '/static', 
-    '/sockjs-node', 
-    '/hot-update.json', 
-    '/favicon.ico',
-    // ... any other paths the React dev server handles itself
-  ];
-  
-  // The proxy is applied only to requests that DO NOT match the static file paths.
   app.use(
-    (pathname) => !shouldNotProxy.some(path => pathname.startsWith(path)), // The filter function
+    // CRITICAL: Explicitly list ONLY the paths we want to proxy.
+    // This ignores everything else (like /static, /sockjs-node, etc.)
+    ['/api'],
     createProxyMiddleware({
-      target: 'http://127.0.0.1:8000', // The Django Backend URL
+      target: 'http://127.0.0.1:8000',
       changeOrigin: true,
       
-      // We still need to explicitly preserve the /api prefix for Django
+      // We keep the pathRewrite here to explicitly ensure the /api prefix is preserved
+      // (which Django needs for authentication/routing)
       pathRewrite: {
         '^/api': '/api', 
       },
