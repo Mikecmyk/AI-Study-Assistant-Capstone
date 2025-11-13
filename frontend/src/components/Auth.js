@@ -1,4 +1,3 @@
-// frontend/src/components/Auth.js
 import React, { useState } from 'react';
 import api from '../api';
 
@@ -14,10 +13,12 @@ function Auth({ onAuth }) {
     setError(null);
     setIsLoading(true);
 
-    const endpoint = isLogin ? '/auth/login/' : '/auth/register/';
+    // CRITICAL FIX: We must prepend '/api/' to match Django's URL configuration
+    const endpoint = isLogin ? '/api/auth/login/' : '/api/auth/register/';
     const action = isLogin ? 'Login' : 'Registration';
 
     try {
+      // The API call now uses the correct, full path: /api/auth/login/
       const response = await api.post(endpoint, { username, password });
       const data = response.data;
 
@@ -26,13 +27,15 @@ function Auth({ onAuth }) {
         localStorage.setItem('token', token);
         onAuth({ user: username, token });
       } else {
-        alert(`Registration successful for ${data.username}! Please log in.`);
+        // Use custom alert/modal instead of JS alert
+        console.log(`Registration successful for ${data.username}! Please log in.`);
         setIsLogin(true);
       }
 
     } catch (err) {
       let errorMsg = `${action} failed.`;
       if (err.response && err.response.data) {
+        // Attempt to extract a more readable error message
         errorMsg = JSON.stringify(err.response.data);
       }
       setError(errorMsg);
