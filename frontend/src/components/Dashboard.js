@@ -1,6 +1,14 @@
+// Dashboard.js (Full, Updated Component)
+
 import React, { useState, useEffect } from 'react';
-import api from '../api'; // Use the same Axios instance
+import api from '../api'; 
 import StudyTools from './StudyTools';
+// 1. IMPORT THE NEW CSS FILE
+import './Dashboard.css'; 
+// You might also need to import Sidebar and ScheduleView components if you create them
+// import Sidebar from './Sidebar';
+// import ScheduleView from './ScheduleView'; 
+
 
 function Dashboard() {
   const [topics, setTopics] = useState([]);
@@ -14,8 +22,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        // CORRECTED PATH: Fetching topics from the known working endpoint
-       const response = await api.get('/topics/'); 
+        const response = await api.get('/topics/'); 
         setTopics(response.data);
 
         if (response.data.length > 0) {
@@ -25,7 +32,6 @@ function Dashboard() {
         setIsLoading(false);
       } catch (err) {
         console.error("Error fetching topics:", err);
-        // Handle 401 Unauthorized errors by logging out the user
         if (err.response && err.response.status === 401) {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
@@ -69,73 +75,93 @@ function Dashboard() {
   }
 
   return (
+    // 2. APPLY GRID LAYOUT CLASS
     <div className="dashboard-container">
-      <h2>Start a New Study Session</h2>
+      
+      {/* 3. LEFT SIDEBAR (e.g., Logo, Primary Nav Links) */}
+      <aside className="sidebar">
+          {/* Placeholder for your Sidebar content */}
+          <h3>Study Core</h3>
+          <p>Navigation Links here...</p>
+      </aside>
 
-      <form onSubmit={handleGenerateSession} className="study-form">
-        {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+      {/* 4. MAIN CONTENT AREA (Tasks, Tools, History) */}
+      <div className="main-content">
 
-        <label style={{ marginRight: '10px' }}>
-          Topic:
-          <select
-            value={selectedTopic}
-            onChange={(e) => setSelectedTopic(e.target.value)}
-            required
-            style={{ marginLeft: '10px' }}
-          >
-            {topics.map((topic) => (
-              <option key={topic.id} value={topic.name}>
-                {topic.name}
-              </option>
-            ))}
-          </select>
-        </label>
+          {/* Study Plan Generator Form */}
+          <div className="dashboard-card">
+              <h2>Start a New Study Session</h2>
+              
+              {/* Apply CSS class to the form and remove inline styles */}
+              <form onSubmit={handleGenerateSession} className="study-form">
+                {error && <p className="error-message">Error: {error}</p>}
 
-        <label style={{ marginLeft: '20px', marginRight: '10px' }}>
-          Duration (e.g., 3 days, 2 hours):
-          <input
-            type="text"
-            value={duration}
-            onChange={(e) => setDuration(e.target.value)}
-            placeholder="e.g., 2 hours or 3 days"
-            required
-            style={{ marginLeft: '10px' }}
-          />
-        </label>
+                <label>
+                  Topic:
+                  <select
+                    value={selectedTopic}
+                    onChange={(e) => setSelectedTopic(e.target.value)}
+                    required
+                  >
+                    {topics.map((topic) => (
+                      <option key={topic.id} value={topic.name}>
+                        {topic.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
-        <button type="submit" disabled={isGenerating} style={{ marginLeft: '20px' }}>
-          {isGenerating ? 'Generating...' : 'Generate AI Study Plan'}
-        </button>
-      </form>
+                <label>
+                  Duration (e.g., 3 days, 2 hours):
+                  <input
+                    type="text"
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                    placeholder="e.g., 2 hours or 3 days"
+                    required
+                  />
+                </label>
 
-      <hr style={{ margin: '30px 0' }} />
+                <button type="submit" disabled={isGenerating}>
+                  {isGenerating ? 'Generating...' : 'Generate AI Study Plan'}
+                </button>
+              </form>
 
-      {generatedContent && (
-        <div className="generated-content">
-          <h3>Generated Study Plan:</h3>
-          <pre
-            style={{
-              whiteSpace: 'pre-wrap',
-              textAlign: 'left',
-              padding: '15px',
-              backgroundColor: '#f4f4f4',
-              border: '1px solid #ddd',
-            }}
-          >
-            {generatedContent}
-          </pre>
-        </div>
-      )}
+              {generatedContent && (
+                <div className="generated-content">
+                  <h3>Generated Study Plan:</h3>
+                  {/* <pre> tag uses the .generated-content pre CSS style */}
+                  <pre>
+                    {generatedContent}
+                  </pre>
+                </div>
+              )}
+          </div>
+          
+          {/* AI Study Tools (Notes/Quiz) - Now fully functional! */}
+          <div className="ai-study-tools dashboard-card">
+              <StudyTools topics={topics} /> 
+          </div>
 
-      <hr style={{ margin: '30px 0' }} />
+          {/* Placeholder for Urgent Tasks/Productivity Chart */}
+          <div className="urgent-tasks dashboard-card">
+              <h3>Urgent Tasks</h3>
+              <p>Task cards will appear here.</p>
+          </div>
+          
+          <div className="study-history dashboard-card">
+              <h2>Recent Study History</h2>
+              <p>Your history will appear here.</p>
+          </div>
 
-      {/* NEW STUDY TOOLS COMPONENT */}
-      <StudyTools topics={topics} /> 
-
-      <hr style={{ margin: '30px 0' }} />
-
-      <h2>Recent Study History</h2>
-      <p>Your history will appear here.</p>
+      </div>
+      
+      {/* 5. RIGHT SCHEDULE/CALENDAR COLUMN */}
+      <aside className="right-schedule">
+          {/* Placeholder for your Schedule/Calendar View component */}
+          <h3>Schedule & Calendar</h3>
+          <p>Calendar component here...</p>
+      </aside>
     </div>
   );
 }

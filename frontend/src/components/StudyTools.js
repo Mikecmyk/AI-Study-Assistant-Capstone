@@ -1,9 +1,13 @@
-// src/components/StudyTools.js
-import React, { useEffect, useState } from 'react'; // React is no longer "unused" because we use JSX
-import api from '../api'; // Use the authenticated API instance
+// src/components/StudyTools.js (Updated with Modern CSS Classes)
 
-const StudyTools = ({ topics: propTopics }) => { // 1. Use propTopics if provided
-    // State to hold the topics if not passed as a prop (from Dashboard.js)
+import React, { useEffect, useState } from 'react'; 
+import api from '../api'; 
+// Import the CSS if this component uses its own styles, 
+// or rely on Dashboard.css if it's imported there. We'll rely on Dashboard.css.
+
+
+const StudyTools = ({ topics: propTopics }) => {
+    // State to hold the topics if not passed as a prop
     const [topics, setTopics] = useState(propTopics || []); 
     const [selectedTopic, setSelectedTopic] = useState(''); 
     
@@ -16,8 +20,7 @@ const StudyTools = ({ topics: propTopics }) => { // 1. Use propTopics if provide
     const [loadingQuiz, setLoadingQuiz] = useState(false);
     const [error, setError] = useState(null);
 
-    // 2. Fetch topics only if not passed as a prop (propTopics is empty/null)
-    // This makes the component more robust
+    // Fetch topics only if not passed as a prop
     useEffect(() => {
         if (topics.length === 0) {
             const fetchTopics = async () => {
@@ -36,14 +39,14 @@ const StudyTools = ({ topics: propTopics }) => { // 1. Use propTopics if provide
         }
     }, [propTopics, topics.length]);
 
-    // 3. handleGenerateNotes is now used
+    // Handle Generate Notes
     const handleGenerateNotes = async () => {
         if (!selectedTopic) {
             alert('Please select a topic first!');
             return;
         }
 
-        setNotes(''); // Clear previous results
+        setNotes(''); 
         setError(null);
         setLoadingNotes(true);
         
@@ -60,19 +63,19 @@ const StudyTools = ({ topics: propTopics }) => { // 1. Use propTopics if provide
         }
     };
     
-    // 4. New function handleGenerateQuiz for the quiz endpoint
+    // Handle Generate Quiz
     const handleGenerateQuiz = async () => {
         if (!selectedTopic) {
             alert('Please select a topic first!');
             return;
         }
 
-        setQuiz(''); // Clear previous results
+        setQuiz(''); 
         setError(null);
         setLoadingQuiz(true);
         
         try {
-            const response = await api.post('/quiz-generate/', { // Use the new endpoint
+            const response = await api.post('/quiz-generate/', { 
                 topic: selectedTopic,
             });
             setQuiz(response.data.quiz);
@@ -86,17 +89,16 @@ const StudyTools = ({ topics: propTopics }) => { // 1. Use propTopics if provide
 
     return (
         <div className="study-tools-container">
-            <h2>AI Study Tools</h2>
+            <h3>AI Study Tools</h3> 
             
-            {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+            {error && <p className="error-message">{error}</p>}
 
-            <div style={{ marginBottom: '20px' }}>
+            <div className="topic-selector-group">
                 <label>
                     Select Topic:
                     <select 
                         value={selectedTopic} 
                         onChange={(e) => setSelectedTopic(e.target.value)}
-                        style={{ marginLeft: '10px' }}
                     >
                         {topics.length === 0 && <option value="">Loading topics...</option>}
                         {topics.map((topic) => (
@@ -109,43 +111,47 @@ const StudyTools = ({ topics: propTopics }) => { // 1. Use propTopics if provide
             </div>
 
             {/* --- Notes Section --- */}
-            <div style={{ marginBottom: '20px', borderBottom: '1px solid #ddd', paddingBottom: '20px' }}>
-                <h3>Study Notes Generator</h3>
+            <div className="tool-section notes-section">
+                <h4>Study Notes Generator</h4>
                 <button 
                     onClick={handleGenerateNotes} 
                     disabled={loadingNotes || !selectedTopic}
+                    className="action-button" // Reuse the primary action button style
                 >
                     {loadingNotes ? 'Generating Notes...' : 'Generate AI Notes'}
                 </button>
             
-                {/* notes is now used */}
+                {/* 1. APPLY NEW GENERATED CONTENT STYLES */}
                 {notes && (
-                    <div style={{ marginTop: '15px' }}>
+                    <div className="generated-content">
                         <h4>Generated Notes for {selectedTopic}:</h4>
-                        <pre style={{ whiteSpace: 'pre-wrap', backgroundColor: '#f9f9f9', padding: '10px', border: '1px solid #eee' }}>
+                        {/* Use the new class for output formatting, assuming notes contain readable text/markdown */}
+                        <div className="generated-notes-output">
                             {notes}
-                        </pre>
+                        </div>
                     </div>
                 )}
             </div>
 
             {/* --- Quiz Section --- */}
-            <div style={{ marginBottom: '20px' }}>
-                <h3>Quiz Generator</h3>
+            <div className="tool-section quiz-section">
+                <h4>Quiz Generator</h4>
                 <button 
                     onClick={handleGenerateQuiz} 
                     disabled={loadingQuiz || !selectedTopic}
+                    className="action-button" // Reuse the primary action button style
                 >
                     {loadingQuiz ? 'Generating Quiz...' : 'Generate AI Quiz'}
                 </button>
             
-                {/* New state for quiz is used */}
+                {/* 2. APPLY NEW GENERATED CONTENT STYLES */}
                 {quiz && (
-                    <div style={{ marginTop: '15px' }}>
+                    <div className="generated-content">
                         <h4>Generated Quiz for {selectedTopic}:</h4>
-                        <pre style={{ whiteSpace: 'pre-wrap', backgroundColor: '#f9f9f9', padding: '10px', border: '1px solid #eee' }}>
+                        {/* Use the new class for quiz formatting */}
+                        <div className="generated-quiz-output">
                             {quiz}
-                        </pre>
+                        </div>
                     </div>
                 )}
             </div>
