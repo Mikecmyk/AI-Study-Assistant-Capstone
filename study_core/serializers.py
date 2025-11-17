@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import StudySession, StudyTopic
 from .models import Topic
 from .models import Course, Topic
+from django.contrib.auth.models import User
 
 class StudyTopicSerializer(serializers.ModelSerializer):
     class Meta:
@@ -49,3 +50,10 @@ class CourseSerializer(serializers.ModelSerializer):
             'duration_hours', 'is_published', 'created_at'
         ]
         read_only_fields = ['slug']
+
+class UserSerializer(serializers.ModelSerializer):
+    """Serializer for reading user data (Admin View)."""
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'is_staff', 'is_active', 'date_joined']
+        read_only_fields = ['id', 'date_joined']

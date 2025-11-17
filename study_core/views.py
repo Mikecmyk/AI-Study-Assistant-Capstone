@@ -10,6 +10,8 @@ from django.conf import settings
 from rest_framework import permissions
 from .models import Course
 from .serializers import CourseSerializer
+from django.contrib.auth.models import User
+from .serializers import UserSerializer
 
 # --- NEW IMPORTS for Models/Serializers ---
 from .models import Topic
@@ -155,3 +157,16 @@ class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = CourseSerializer
     # Allow read-only access for anyone, but require auth for write operations
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows users (Learners) to be viewed and their status edited.
+    """
+    queryset = User.objects.all().order_by('date_joined')
+    serializer_class = UserSerializer
+    
+    # Restrict actions: Admins can View, Edit (PATCH/PUT), but we might restrict POST/DELETE
+    permission_classes = [permissions.IsAdminUser] 
+    
+    # Optionally restrict methods if you only want to view/update staff/active status
+    http_method_names = ['get', 'patch', 'put', 'head', 'options']
