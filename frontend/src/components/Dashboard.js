@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api'; // Use the same Axios instance
-import StudyTools from './StudyTools'; // Import the new component
+import StudyTools from './StudyTools';
 
 function Dashboard() {
   const [topics, setTopics] = useState([]);
@@ -14,8 +14,8 @@ function Dashboard() {
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        // We are currently blocked by a proxy 404 error here, but the code is correct
-        const response = await api.get('/topics/'); 
+        // CORRECTED PATH: Fetching topics from the known working endpoint
+       const response = await api.get('/topics/'); 
         setTopics(response.data);
 
         if (response.data.length > 0) {
@@ -25,8 +25,7 @@ function Dashboard() {
         setIsLoading(false);
       } catch (err) {
         console.error("Error fetching topics:", err);
-        // Note: I changed the endpoint to just '/topics/' in the fetchTopics call 
-        // as per standard setup with a proxy handling the '/api' prefix.
+        // Handle 401 Unauthorized errors by logging out the user
         if (err.response && err.response.status === 401) {
           localStorage.removeItem('token');
           localStorage.removeItem('user');
@@ -109,6 +108,8 @@ function Dashboard() {
         </button>
       </form>
 
+      <hr style={{ margin: '30px 0' }} />
+
       {generatedContent && (
         <div className="generated-content">
           <h3>Generated Study Plan:</h3>
@@ -126,12 +127,12 @@ function Dashboard() {
         </div>
       )}
 
-      {/* --- NEW STUDY TOOLS SECTION --- */}
       <hr style={{ margin: '30px 0' }} />
-      {/* Render StudyTools, passing the loaded topics */}
-      {topics.length > 0 && <StudyTools topics={topics} />} 
+
+      {/* NEW STUDY TOOLS COMPONENT */}
+      <StudyTools topics={topics} /> 
+
       <hr style={{ margin: '30px 0' }} />
-      {/* --- END STUDY TOOLS SECTION --- */}
 
       <h2>Recent Study History</h2>
       <p>Your history will appear here.</p>
