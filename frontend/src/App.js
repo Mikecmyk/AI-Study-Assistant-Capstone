@@ -1,33 +1,44 @@
-// App.js (Updated with Admin and Learner Routing)
+// src/App.js (Fully Updated with Authentication and Dynamic State)
 
-import React from "react";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./components/Dashboard"; // The Learner Dashboard
-import AdminDashboard from "./Admin/AdminDashboard"; // Corrected path // The new Admin Container // The new Admin Container
+import AdminDashboard from "./Admin/AdminDashboard"; // Corrected path
+import Login from "./components/Login"; // Ensure this component is created!
 import "./App.css";
 
-// --- Mock Authentication and Authorization Context/Hooks ---
-// In a real application, you would use React Context or Redux/Zustand here.
+// --- AUTHENTICATION CONTEXT/HOOK ---
 const useAuth = () => {
-    // For now, hardcode these values for testing:
-    const isLoggedIn = true; // Assume the user is logged in
-    const isAdmin = true;     // Assume the user is an Admin
-    return { isLoggedIn, isAdmin };
+    // 1. Get the initial token state from local storage
+    const [token, setToken] = useState(localStorage.getItem('token'));
+    
+    // We infer login status from the presence of a token
+    const isLoggedIn = !!token;
+    
+    // Placeholder for Admin check (Needs refinement in a real app)
+    const isAdmin = isLoggedIn; // For simple logic: if logged in, you can access admin route
+
+    const logout = () => {
+        localStorage.removeItem('token');
+        // Force state update to re-render the app, triggering a redirect to /login
+        setToken(null); 
+    };
+
+    return { isLoggedIn, isAdmin, logout, setToken };
 };
 
 // --- Component to Protect Routes ---
+// Note: If you have not created 'Login.js' yet, you must do so, or this will fail.
 const ProtectedRoute = ({ children, isAdminRequired }) => {
     const { isLoggedIn, isAdmin } = useAuth();
     
-    // Check if the user is logged in
     if (!isLoggedIn) {
         // Redirect to login page if not logged in
         return <Navigate to="/login" replace />; 
     }
     
-    // Check if admin role is required and if the user has it
     if (isAdminRequired && !isAdmin) {
-        // Redirect non-admins to the dashboard or an unauthorized page
+        // Redirect non-admins to the dashboard
         return <Navigate to="/" replace />;
     }
 
@@ -35,33 +46,54 @@ const ProtectedRoute = ({ children, isAdminRequired }) => {
 };
 
 function App() {
-  return (
-    <Router>
-      <Routes>
-        
-        {/* 1. LEARNER DASHBOARD ROUTE (Public/Default) */}
-        <Route 
-          path="/" 
-          element={<Dashboard />} 
-        />
-        
-        {/* 2. ADMIN DASHBOARD ROUTE (Protected) */}
-        <Route 
-          path="/admin" 
-          element={
-            <ProtectedRoute isAdminRequired={true}>
-              <AdminDashboard />
-            </ProtectedRoute>
-          } 
-        />
+    const { isLoggedIn, setToken } = useAuth();
 
-        {/* 3. Placeholder for Login/Auth Routes */}
-        <Route path="/login" element={<div>Login Page</div>} />
-        {/* You'll add other routes like /register, /profile, etc. here */}
+    // Handler for successful login: stores the token and redirects to the dashboard
+    const handleLoginSuccess = (newToken) => {
+        // The Login component handles setting the token in localStorage,
+        // we just need to update the state here to trigger a re-render.
+        setToken(newToken); 
+        window.location.href = '/'; // Redirect to the main dashboard
+    };
 
-      </Routes>
-    </Router>
-  );
+    return (
+        <Router>
+            <Routes>
+                
+                {/* 1. LOGIN ROUTE (Public) */}
+                <Route 
+                    path="/login" 
+                    // If the user is already logged in, redirect them away from the login page
+                    element={isLoggedIn ? <Navigate to="/" replace /> : <Login onLoginSuccess={handleLoginSuccess} />} 
+                />
+
+                {/* 2. PROTECTED LEARNER DASHBOARD ROUTE (Default) */}
+                <Route 
+                    path="/" 
+                    element={
+                        <ProtectedRoute>
+                            <Dashboard logout={useAuth().logout} />
+                        </ProtectedRoute>
+                    } 
+                />
+                
+                {/* 3. PROTECTED ADMIN DASHBOARD ROUTE */}
+                <Route 
+                    path="/admin" 
+                    element={
+                        <ProtectedRoute isAdminRequired={true}>
+                            <AdminDashboard />
+                        </ProtectedRoute>
+                    } 
+                />
+                
+                {/* Fallback route: catch all other paths and redirect to dashboard */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+
+
+            </Routes>
+        </Router>
+    );
 }
 
 export default App;
