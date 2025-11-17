@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
-
 User = get_user_model()
 
 
@@ -43,3 +42,54 @@ class StudySession(models.Model):
     
     def __str__(self):
         return f'{self.user.username} | {self.topic_name} ({self.created_at.strftime("%Y-%m-%d")})'
+    
+
+class Topic(models.Model):
+    """Represents a specific subject or topic that can be studied."""
+    
+    # The name of the topic, e.g., 'Thermodynamics' or 'Python Basics'
+    name = models.CharField(max_length=100, unique=True)
+    
+    # A brief description of the topic
+    description = models.TextField(blank=True)
+    
+    # Flag to indicate if the topic is active/visible to learners
+    is_active = models.BooleanField(default=True)
+    
+    # Optional: Date when the topic was created
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+    
+class Course(models.Model):
+    """Represents a structured learning course that can span multiple topics."""
+    
+    # --- Basic Fields ---
+    name = models.CharField(max_length=200, unique=True)
+    slug = models.SlugField(max_length=200, unique=True, blank=True)
+    description = models.TextField()
+    
+    # --- Link to Topics (Many-to-Many Relationship) ---
+    # A Course can cover many Topics, and a Topic can be part of many Courses.
+    topics = models.ManyToManyField('Topic', related_name='courses', blank=True)
+    
+    # --- Course Structure/Duration ---
+    duration_hours = models.IntegerField(default=10, help_text="Total estimated study hours.")
+    
+    # --- Status ---
+    is_published = models.BooleanField(default=False, help_text="If checked, the course is visible to learners.")
+    
+    # --- Metadata ---
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['name']
+        verbose_name = "Study Course"
+        verbose_name_plural = "Study Courses"
+
+    def __str__(self):
+        return self.name
+
+# Don't forget to register this new model in study_core/admin.py!
