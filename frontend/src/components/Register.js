@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Lock, Mail, BookOpen, Brain, Target, Zap } from 'lucide-react';
+import './auth.css'; // IMPORT THE NEW CSS
 
 function Register() {
     const [formData, setFormData] = useState({
@@ -100,38 +100,37 @@ function Register() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-            <div className="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-2 bg-white rounded-2xl shadow-2xl overflow-hidden">
-                {/* Left Side - Form */}
-                <div className="p-12 flex flex-col justify-center order-2 lg:order-1">
-                    <div className="lg:hidden mb-8">
-                        <div className="flex items-center space-x-3 mb-4">
-                            <Brain className="h-8 w-8 text-indigo-600" />
-                            <span className="text-2xl font-bold text-gray-800">StudyFlow</span>
+        <div className="auth-container">
+            <div className="auth-card">
+                {/* Form Side */}
+                <div className="auth-form-side">
+                    {/* Mobile Branding */}
+                    <div className="mobile-brand">
+                        <div className="mobile-brand-header">
+                            <div className="brand-icon">🧠</div>
+                            <div className="mobile-brand-title">StudyFlow</div>
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-800">Join StudyFlow</h2>
+                        <h2>Join StudyFlow</h2>
                     </div>
 
-                    <div className="max-w-md mx-auto w-full">
-                        <h2 className="text-3xl font-bold text-gray-800 mb-2">Create Account</h2>
-                        <p className="text-gray-600 mb-8">Start your personalized learning journey today</p>
+                    <div className="form-container">
+                        <h2 className="form-title">Create Account</h2>
+                        <p className="form-subtitle">Start your personalized learning journey today</p>
 
-                        <form onSubmit={handleRegister} className="space-y-6">
+                        <form onSubmit={handleRegister} className="auth-form">
                             {(error || successMessage) && (
-                                <div className={`p-4 rounded-xl text-sm ${
-                                    error ? 'bg-red-50 border border-red-200 text-red-700' : 'bg-green-50 border border-green-200 text-green-700'
-                                }`}>
+                                <div className={`alert ${error ? 'alert-error' : 'alert-success'}`}>
                                     {error || successMessage}
                                 </div>
                             )}
                             
                             {/* Email Input */}
-                            <div className="space-y-2">
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                            <div className="form-group">
+                                <label htmlFor="email" className="form-label">
                                     Email Address
                                 </label>
-                                <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                <div className="input-wrapper">
+                                    <div className="input-icon">📧</div>
                                     <input
                                         id="email"
                                         name="email"
@@ -140,7 +139,7 @@ function Register() {
                                         required
                                         value={formData.email}
                                         onChange={handleChange}
-                                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+                                        className="form-input"
                                         placeholder="student@university.edu"
                                         disabled={isLoading}
                                     />
@@ -148,12 +147,12 @@ function Register() {
                             </div>
 
                             {/* Password Input */}
-                            <div className="space-y-2">
-                                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                            <div className="form-group">
+                                <label htmlFor="password" className="form-label">
                                     Password
                                 </label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                <div className="input-wrapper">
+                                    <div className="input-icon">🔒</div>
                                     <input
                                         id="password"
                                         name="password"
@@ -162,27 +161,27 @@ function Register() {
                                         required
                                         value={formData.password}
                                         onChange={handleChange}
-                                        className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+                                        className="form-input"
                                         placeholder="•••••••• (min 8 characters)"
                                         disabled={isLoading}
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                        className="password-toggle"
                                     >
-                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                        {showPassword ? '🙈' : '👁️'}
                                     </button>
                                 </div>
                             </div>
 
                             {/* Confirm Password Input */}
-                            <div className="space-y-2">
-                                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+                            <div className="form-group">
+                                <label htmlFor="confirmPassword" className="form-label">
                                     Confirm Password
                                 </label>
-                                <div className="relative">
-                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                                <div className="input-wrapper">
+                                    <div className="input-icon">🔒</div>
                                     <input
                                         id="confirmPassword"
                                         name="confirmPassword"
@@ -191,16 +190,16 @@ function Register() {
                                         required
                                         value={formData.confirmPassword}
                                         onChange={handleChange}
-                                        className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+                                        className="form-input"
                                         placeholder="••••••••"
                                         disabled={isLoading}
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                        className="password-toggle"
                                     >
-                                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                        {showConfirmPassword ? '🙈' : '👁️'}
                                     </button>
                                 </div>
                             </div>
@@ -208,74 +207,66 @@ function Register() {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 px-4 rounded-xl font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                                className="submit-button"
                             >
                                 {isLoading ? (
-                                    <div className="flex items-center justify-center">
-                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
+                                    <>
+                                        <span className="loading-spinner"></span>
                                         Creating Account...
-                                    </div>
+                                    </>
                                 ) : (
                                     "Create Your StudyFlow Account"
                                 )}
                             </button>
                             
-                            <div className="text-center text-sm text-gray-600">
+                            <div className="form-footer">
                                 Already have an account?{" "}
-                                <Link 
-                                    to="/login" 
-                                    className="font-medium text-indigo-600 hover:text-indigo-500 transition duration-200"
-                                >
+                                <Link to="/login" className="auth-link">
                                     Sign in
                                 </Link>
                             </div>
                         </form>
 
-                        <div className="mt-8 pt-8 border-t border-gray-200">
-                            <p className="text-xs text-gray-500 text-center">
-                                By creating an account, you agree to our Terms of Service and Privacy Policy
-                            </p>
+                        <div className="terms">
+                            <p>By creating an account, you agree to our Terms of Service and Privacy Policy</p>
                         </div>
                     </div>
                 </div>
 
-                {/* Right Side - Branding */}
-                <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-12 text-white hidden lg:flex flex-col justify-between order-1 lg:order-2">
+                {/* Branding Side */}
+                <div className="auth-branding">
                     <div>
-                        <div className="flex items-center space-x-3 mb-8">
-                            <Brain className="h-8 w-8" />
-                            <span className="text-2xl font-bold">StudyFlow</span>
+                        <div className="brand-header">
+                            <div className="brand-icon">🧠</div>
+                            <div className="brand-title">StudyFlow</div>
                         </div>
                         
-                        <h1 className="text-4xl font-bold mb-6">Start Your Learning Journey!</h1>
-                        <p className="text-indigo-100 text-lg mb-8">
+                        <h1 className="brand-main-title">Start Your Learning Journey!</h1>
+                        <p className="brand-subtitle">
                             Join thousands of students who are achieving their academic goals with AI-powered study assistance.
                         </p>
                         
-                        <div className="space-y-4">
-                            <div className="flex items-center space-x-3">
-                                <Target className="h-5 w-5 text-indigo-200" />
-                                <span className="text-indigo-100">Personalized Study Plans</span>
+                        <div className="feature-list">
+                            <div className="feature-item">
+                                <div className="feature-icon">🎯</div>
+                                <span>Personalized Study Plans</span>
                             </div>
-                            <div className="flex items-center space-x-3">
-                                <Zap className="h-5 w-5 text-indigo-200" />
-                                <span className="text-indigo-100">Smart Progress Tracking</span>
+                            <div className="feature-item">
+                                <div className="feature-icon">⚡</div>
+                                <span>Smart Progress Tracking</span>
                             </div>
-                            <div className="flex items-center space-x-3">
-                                <BookOpen className="h-5 w-5 text-indigo-200" />
-                                <span className="text-indigo-100">AI Study Tools</span>
+                            <div className="feature-item">
+                                <div className="feature-icon">📚</div>
+                                <span>AI Study Tools</span>
                             </div>
                         </div>
                     </div>
                     
-                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4">
-                        <p className="text-indigo-100 text-sm">
+                    <div className="testimonial">
+                        <p className="testimonial-text">
                             "The AI study planner helped me improve my grades by 30% in just one semester!"
                         </p>
-                        <p className="text-indigo-200 text-xs mt-2">- Alex, Engineering Student</p>
+                        <p className="testimonial-author">- Alex, Engineering Student</p>
                     </div>
                 </div>
             </div>
