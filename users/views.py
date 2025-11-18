@@ -4,23 +4,78 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
+from rest_framework.permissions import AllowAny  # ADD THIS IMPORT
 from .serializers import UserSerializer
 
 class RegisterView(APIView):
     """
     Custom view for user registration.
     """
+    permission_classes = [AllowAny]  # ADD THIS LINE
+    
     def post(self, request, format=None):
-        serializer = UserSerializer(data=request.data)
+        # Make sure we have a username (use email if not provided)
+        data = request.data.copy()
+        if 'email' in data and 'username' not in data:
+            data['username'] = data['email']
+        
+        serializer = UserSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            user = serializer.save()
+            
+            # Create token for the new user
+            token, created = Token.objects.get_or_create(user=user)
+            
+            return Response({
+                'user': serializer.data,
+                'token': token.key,
+                'message': 'User created successfully'
+            }, status=status.HTTP_201_CREATED)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# Use Django REST Framework's default view for token-based login
-# This view handles username and password and returns a token.
 class LoginView(ObtainAuthToken):
     """
-    Endpoint for user login, returning an authentication token.
+    Custom login view that accepts email instead of username.
     """
-    pass
+    permission_classes = [AllowAny]  # ADD THIS LINE
+    
+    def post(self, request, *args, **kwargs):
+        # Get email and password from request
+        email = request.data.get('email')
+        password = request.data.get('password')
+        
+        if not email or not password:
+            return Response(
+                {'error': 'Please provide both email and password'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Find user by email
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'Invalid credentials'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Authenticate with username and password
+        user = authenticate(username=user.username, password=password)
+        
+        if user:
+            token, created = Token.objects.get_or_create(user=user)
+            return Response({
+                'token': token.key,
+                'user_id': user.id,
+                'email': user.email,
+                'username': user.username
+            })
+        else:
+            return Response(
+                {'error': 'Invalid credentials'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )

@@ -1,10 +1,12 @@
-// Dashboard.js (FULL CODE - Warnings Fixed by Re-enabling Form Logic)
+// Dashboard.js (FULL CODE - WITH SCHEDULE CALENDAR INTEGRATION)
 
 import React, { useState, useEffect } from 'react';
 import api from '../api'; 
 import StudyTools from './StudyTools';
 import StudyTaskCard from './StudyTaskCard'; 
 import ProductivityChart from './ProductivityChart'; 
+// IMPORT THE NEW SCHEDULE/CALENDAR COMPONENT
+import ScheduleCalendar from './ScheduleCalendar'; 
 import './Dashboard.css'; 
 
 
@@ -23,12 +25,12 @@ function Dashboard({ logout }) {
     const [tasks, setTasks] = useState(MOCK_TASKS);
     const [isLoading, setIsLoading] = useState(true);
     // 1. STATE VARIABLES FOR AI STUDY PLAN GENERATOR
-    const [fetchError, setFetchError] = useState(null); // Renamed to avoid confusion with form error
-    const [studyPlanError, setStudyPlanError] = useState(null); // Specific error for the form
+    const [fetchError, setFetchError] = useState(null); 
+    const [studyPlanError, setStudyPlanError] = useState(null);
     const [selectedTopic, setSelectedTopic] = useState('');
-    const [duration, setDuration] = useState(''); // Used in input onChange
-    const [generatedContent, setGeneratedContent] = useState(''); // Used in rendering
-    const [isGenerating, setIsGenerating] = useState(false); // Used to disable button
+    const [duration, setDuration] = useState('');
+    const [generatedContent, setGeneratedContent] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
 
     useEffect(() => {
         const fetchTopics = async () => {
@@ -130,7 +132,7 @@ function Dashboard({ logout }) {
             {/* 4. MAIN CONTENT AREA */}
             <div className="main-content">
 
-                {/* Study Plan Generator Form - NOW CORRECTLY USING ALL STATE/HANDLERS */}
+                {/* Study Plan Generator Form */}
                 <div className="dashboard-card">
                     <h2>Start a New Study Session</h2>
                     
@@ -157,7 +159,7 @@ function Dashboard({ logout }) {
                             <input
                                 type="text"
                                 value={duration}
-                                onChange={(e) => setDuration(e.target.value)} // Fix: setDuration used here
+                                onChange={(e) => setDuration(e.target.value)}
                                 placeholder="e.g., 2 hours or 3 days"
                                 required
                             />
@@ -168,7 +170,6 @@ function Dashboard({ logout }) {
                         </button>
                     </form>
 
-                    {/* Fix: generatedContent used here */}
                     {generatedContent && (
                         <div className="generated-content">
                             <h3>Generated Study Plan:</h3>
@@ -212,11 +213,9 @@ function Dashboard({ logout }) {
 
             </div>
             
-            {/* 5. RIGHT SCHEDULE/CALENDAR COLUMN */}
+            {/* 5. RIGHT SCHEDULE/CALENDAR COLUMN - NEW COMPONENT INTEGRATED */}
             <aside className="right-schedule">
-                {/* Placeholder for your Schedule/Calendar View component */}
-                <h3>Schedule & Calendar</h3>
-                <p>Calendar component here...</p>
+                <ScheduleCalendar />
             </aside>
         </div>
     );

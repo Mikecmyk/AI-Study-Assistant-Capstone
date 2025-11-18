@@ -443,3 +443,133 @@
 .logout-button:hover {
     background-color: #c0392b;
 }
+
+/* --- Schedule & Calendar Section Styling (Add to Dashboard.css) --- */
+
+.schedule-calendar-container {
+    padding: 15px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Header & Button */
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.calendar-header h4 {
+    margin: 0;
+    font-size: 1.1em;
+}
+
+.calendar-view-button {
+    background-color: transparent;
+    border: 1px solid #ddd;
+    color: #6c63ff;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85em;
+}
+
+/* Day Grid Placeholder */
+.calendar-grid-placeholder {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    text-align: center;
+}
+
+.day-cell {
+    padding: 5px 0;
+    font-size: 0.9em;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.day-cell span {
+    font-size: 0.7em;
+    color: #6c757d;
+}
+
+.day-cell:hover {
+    background-color: #f0f2f5;
+}
+
+.current-day {
+    background-color: #6c63ff;
+    color: white;
+    font-weight: bold;
+}
+
+.current-day span {
+    color: white;
+}
+
+/* Event List */
+.upcoming-events-list h4 {
+    margin-bottom: 10px;
+    font-size: 1em;
+    color: #343a40;
+}
+
+.schedule-event-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.schedule-event-item:last-child {
+    border-bottom: none;
+}
+
+.event-indicator {
+    width: 6px;
+    height: 30px;
+    border-radius: 3px;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.event-details {
+    flex-grow: 1;
+}
+
+.event-title {
+    font-weight: 600;
+    font-size: 0.9em;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.event-time {
+    font-size: 0.8em;
+    color: #6c757d;
+    margin: 0;
+}
+
+.event-subject-tag {
+    font-size: 0.75em;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+    margin-left: 10px;
+    white-space: nowrap;
+}
+
+.add-event-button {
+    /* Inherits action-button styles, adding specificity */
+    padding: 10px;
+    width: 100%;
+}

@@ -8,6 +8,7 @@ from .views import (
     user_data_view, 
     session_generation_view,
     quiz_generate_view, # <-- New Quiz View
+
 )
 
 urlpatterns = [
@@ -24,5 +25,6 @@ urlpatterns = [
     path('study-tools/', study_tools_view, name='study-tools'),
     
     # POST /api/quiz-generate/ (Generates AI Quiz)
-    path('quiz-generate/', quiz_generate_view, name='quiz-generate'), 
+    path('quiz-generate/', quiz_generate_view, name='quiz-generate'),
+
 ]

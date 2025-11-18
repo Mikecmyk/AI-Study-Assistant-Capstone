@@ -9,19 +9,24 @@ from study_core.views import TopicViewSet
 
 # Create a router instance
 router = routers.DefaultRouter()
-# Register the Topic ViewSet with the router
-# This creates /api/admin/topics/ for List/Create and /api/admin/topics/{id}/ for Retrieve/Update/Delete
 router.register(r'admin/topics', TopicViewSet, basename='admin-topic')
 
 
 urlpatterns = [
+    # 1. Admin path
     path('admin/', admin.site.urls),
     
-    path('api/', include('study_core.urls')), 
-    
+    # 2. HIGH PRIORITY: AUTH/LOGIN/REGISTER URLs should be checked first
     path('api/auth/', include('users.urls')),
 
+    # 3. Other API paths (study_core)
+    path('api/', include('study_core.urls')), 
+    
+    # 4. Generic Router paths should be last in the /api/ group
+    path('api/', include(router.urls)),
+    
+    # 5. Redirect
     path('', RedirectView.as_view(url='api/', permanent=True)), 
 
-    path('api/', include(router.urls)),
+    path('api/auth/', include('study_core.urls')),
 ]

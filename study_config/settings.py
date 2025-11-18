@@ -153,9 +153,9 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ),
     # Require authentication by default
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
+    # 'DEFAULT_PERMISSION_CLASSES': (
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ),
 }
 
 GEMINI_API_KEY = config('GEMINI_API_KEY')
