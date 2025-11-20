@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from "react-router-dom";
-import './auth.css'; // IMPORT THE NEW CSS
-
+import './Dashboard.css'; 
 function Login({ onLoginSuccess }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -79,36 +78,36 @@ function Login({ onLoginSuccess }) {
                 <div className="auth-branding">
                     <div>
                         <div className="brand-header">
-                            <div className="brand-icon">🧠</div>
-                            <div className="brand-title">StudyFlow</div>
+                            <div className="brand-icon">🎓</div>
+                            <div className="brand-title">Zonlus</div>
                         </div>
                         
                         <h1 className="brand-main-title">Welcome Back, Scholar!</h1>
                         <p className="brand-subtitle">
-                            Continue your learning journey with personalized study plans, AI-powered tools, and progress tracking.
+                            Continue your journey to academic excellence with AI-powered study tools and personalized learning paths.
                         </p>
                         
                         <div className="feature-list">
                             <div className="feature-item">
+                                <div className="feature-icon">🚀</div>
+                                <span>AI-Powered Study Plans</span>
+                            </div>
+                            <div className="feature-item">
+                                <div className="feature-icon">📊</div>
+                                <span>Smart Progress Tracking</span>
+                            </div>
+                            <div className="feature-item">
                                 <div className="feature-icon">🎯</div>
-                                <span>Smart Study Planning</span>
-                            </div>
-                            <div className="feature-item">
-                                <div className="feature-icon">⚡</div>
-                                <span>AI-Powered Tools</span>
-                            </div>
-                            <div className="feature-item">
-                                <div className="feature-icon">📚</div>
-                                <span>Progress Tracking</span>
+                                <span>Personalized Learning</span>
                             </div>
                         </div>
                     </div>
                     
                     <div className="testimonial">
                         <p className="testimonial-text">
-                            "StudyFlow helped me organize my learning and achieve my goals faster than ever before."
+                            "Zonlus transformed how I study! The AI-generated plans helped me improve my grades by 2 levels in just one semester."
                         </p>
-                        <p className="testimonial-author">- Sarah, Computer Science Student</p>
+                        <p className="testimonial-author">- Sarah, Medical Student</p>
                     </div>
                 </div>
 
@@ -117,15 +116,15 @@ function Login({ onLoginSuccess }) {
                     {/* Mobile Branding */}
                     <div className="mobile-brand">
                         <div className="mobile-brand-header">
-                            <div className="brand-icon">🧠</div>
-                            <div className="mobile-brand-title">StudyFlow</div>
+                            <div className="brand-icon">🎓</div>
+                            <div className="mobile-brand-title">Zonlus</div>
                         </div>
                         <h2>Welcome Back!</h2>
                     </div>
 
                     <div className="form-container">
                         <h2 className="form-title">Sign In</h2>
-                        <p className="form-subtitle">Enter your credentials to access your dashboard</p>
+                        <p className="form-subtitle">Enter your credentials to continue your learning journey</p>
 
                         <form onSubmit={handleLogin} className="auth-form">
                             {error && (
@@ -134,7 +133,6 @@ function Login({ onLoginSuccess }) {
                                 </div>
                             )}
                             
-                            {/* Email Input */}
                             <div className="form-group">
                                 <label htmlFor="email" className="form-label">
                                     Email Address
@@ -156,7 +154,6 @@ function Login({ onLoginSuccess }) {
                                 </div>
                             </div>
 
-                            {/* Password Input */}
                             <div className="form-group">
                                 <div className="form-label-row">
                                     <label htmlFor="password" className="form-label">
@@ -201,12 +198,12 @@ function Login({ onLoginSuccess }) {
                                         Signing In...
                                     </>
                                 ) : (
-                                    "Sign In to Your Dashboard"
+                                    "Access My Dashboard"
                                 )}
                             </button>
                             
                             <div className="form-footer">
-                                Don't have an account?{" "}
+                                New to Zonlus?{" "}
                                 <Link to="/register" className="auth-link">
                                     Create account
                                 </Link>

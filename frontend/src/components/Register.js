@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
-import './auth.css'; // IMPORT THE NEW CSS
-
+import './Dashboard.css'; 
 function Register() {
     const [formData, setFormData] = useState({
         email: '',
@@ -107,15 +106,15 @@ function Register() {
                     {/* Mobile Branding */}
                     <div className="mobile-brand">
                         <div className="mobile-brand-header">
-                            <div className="brand-icon">🧠</div>
-                            <div className="mobile-brand-title">StudyFlow</div>
+                            <div className="brand-icon">🎓</div>
+                            <div className="mobile-brand-title">Zonlus</div>
                         </div>
-                        <h2>Join StudyFlow</h2>
+                        <h2>Join Zonlus</h2>
                     </div>
 
                     <div className="form-container">
                         <h2 className="form-title">Create Account</h2>
-                        <p className="form-subtitle">Start your personalized learning journey today</p>
+                        <p className="form-subtitle">Start your journey to academic success</p>
 
                         <form onSubmit={handleRegister} className="auth-form">
                             {(error || successMessage) && (
@@ -124,7 +123,6 @@ function Register() {
                                 </div>
                             )}
                             
-                            {/* Email Input */}
                             <div className="form-group">
                                 <label htmlFor="email" className="form-label">
                                     Email Address
@@ -146,7 +144,6 @@ function Register() {
                                 </div>
                             </div>
 
-                            {/* Password Input */}
                             <div className="form-group">
                                 <label htmlFor="password" className="form-label">
                                     Password
@@ -175,7 +172,6 @@ function Register() {
                                 </div>
                             </div>
 
-                            {/* Confirm Password Input */}
                             <div className="form-group">
                                 <label htmlFor="confirmPassword" className="form-label">
                                     Confirm Password
@@ -215,7 +211,7 @@ function Register() {
                                         Creating Account...
                                     </>
                                 ) : (
-                                    "Create Your StudyFlow Account"
+                                    "Start Learning with Zonlus"
                                 )}
                             </button>
                             
@@ -237,34 +233,34 @@ function Register() {
                 <div className="auth-branding">
                     <div>
                         <div className="brand-header">
-                            <div className="brand-icon">🧠</div>
-                            <div className="brand-title">StudyFlow</div>
+                            <div className="brand-icon">🎓</div>
+                            <div className="brand-title">Zonlus</div>
                         </div>
                         
                         <h1 className="brand-main-title">Start Your Learning Journey!</h1>
                         <p className="brand-subtitle">
-                            Join thousands of students who are achieving their academic goals with AI-powered study assistance.
+                            Join thousands of students who are achieving academic excellence with AI-powered study assistance and personalized learning paths.
                         </p>
                         
                         <div className="feature-list">
                             <div className="feature-item">
-                                <div className="feature-icon">🎯</div>
-                                <span>Personalized Study Plans</span>
+                                <div className="feature-icon">🚀</div>
+                                <span>AI-Powered Study Plans</span>
                             </div>
                             <div className="feature-item">
-                                <div className="feature-icon">⚡</div>
+                                <div className="feature-icon">📊</div>
                                 <span>Smart Progress Tracking</span>
                             </div>
                             <div className="feature-item">
-                                <div className="feature-icon">📚</div>
-                                <span>AI Study Tools</span>
+                                <div className="feature-icon">🎯</div>
+                                <span>Personalized Learning Paths</span>
                             </div>
                         </div>
                     </div>
                     
                     <div className="testimonial">
                         <p className="testimonial-text">
-                            "The AI study planner helped me improve my grades by 30% in just one semester!"
+                            "Zonlus helped me organize my study schedule and track my progress like never before. My grades improved dramatically!"
                         </p>
                         <p className="testimonial-author">- Alex, Engineering Student</p>
                     </div>

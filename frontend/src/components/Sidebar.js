@@ -5,9 +5,9 @@ import React from 'react';
 
 const Sidebar = ({ activePath, onNavigate }) => {
     const navItems = [
-        { name: 'Dashboard', path: '/dashboard', icon: '🏠' },
-        { name: 'My Courses', path: '/courses', icon: '📚' },
-        { name: 'Progress', path: '/progress', icon: '📈' },
+        { name: 'Dashboard', path: '/dashboard', icon: '' },
+        { name: 'My Courses', path: '/courses', icon: '' },
+        { name: 'Progress', path: '/progress', icon: '' },
     ];
     
     // Assume isAdmin prop or context exists

@@ -1,13 +1,10 @@
+// App.js
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
-import { LogIn, UserPlus } from 'lucide-react';
-
-// IMPORT YOUR ACTUAL DASHBOARD COMPONENTS WITH CORRECT PATHS
-import Dashboard from './components/Dashboard'; // Dashboard is in src/Components/
-import AdminDashboard from './Admin/AdminDashboard'; // AdminDashboard is in src/Admin/
-
-// NOTE: We are using absolute URLs for the API calls (e.g., http://127.0.0.1:8000/...)
-// to bypass potential proxy configuration issues, as suggested by the troubleshooting steps.
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import Courses from './components/Courses';
+import Dashboard from './components/Dashboard';
+import AdminDashboard from './Admin/AdminDashboard';
+import LandingPage from './components/LandingPage'; // Add this import
 
 // =================================================================
 // 1. COMPONENTS
@@ -32,13 +29,11 @@ function Login({ onLoginSuccess }) {
         setIsLoading(true);
 
         try {
-            // FIX: Try both 'email' and 'username' fields to see what your backend expects
             const response = await fetch('http://127.0.0.1:8000/api/auth/login/', { 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                // Try with email first, if that doesn't work, try username
                 body: JSON.stringify({ email: email, password }),
             });
 
@@ -49,7 +44,6 @@ function Login({ onLoginSuccess }) {
                 console.warn("Could not parse response as JSON. Treating as non-structured error.");
             }
 
-            // Enhanced error logging
             console.log('Login response status:', response.status);
             console.log('Login response data:', data);
 
@@ -74,7 +68,7 @@ function Login({ onLoginSuccess }) {
             }
             
             // SUCCESS PATH
-            const authToken = data.token || data.key; // Some APIs use 'key' instead of 'token'
+            const authToken = data.token || data.key;
 
             if (!authToken) {
                 throw new Error("No authentication token received from server");
@@ -82,7 +76,7 @@ function Login({ onLoginSuccess }) {
 
             localStorage.setItem('token', authToken);
             if (onLoginSuccess) {
-                onLoginSuccess(authToken); // Triggers app redirect via state change
+                onLoginSuccess(authToken);
             }
 
         } catch (error) {
@@ -164,18 +158,18 @@ function Login({ onLoginSuccess }) {
                                 Logging In...
                             </div>
                         ) : (
-                            <span className='flex items-center'><LogIn size={20} className='mr-2' /> Sign In</span>
+                            <span className='flex items-center'>Sign In</span>
                         )}
                     </button>
                     
                     <div className="text-center text-sm mt-4">
                         Don't have an account? 
-                        <Link 
-                            to="/register" 
+                        <a 
+                            href="/register" 
                             className="text-indigo-600 hover:text-indigo-500 font-medium ml-1"
                         >
                             Sign Up
-                        </Link>
+                        </a>
                     </div>
                 </form>
             </div>
@@ -191,7 +185,7 @@ function Register() {
     const [error, setError] = useState(''); 
     const [successMessage, setSuccessMessage] = useState('');
     
-    // Initialize useNavigate hook
+    // Initialize useNavigate hook - FIXED
     const navigate = useNavigate();
 
     const handleRegister = async (e) => { 
@@ -219,14 +213,12 @@ function Register() {
             });
 
             let data = {};
-            // Attempt to parse JSON for success data or structured error messages.
             try {
                 data = await response.json();
             } catch (jsonError) {
                 console.warn("Could not parse response as JSON. Treating as non-structured error.");
             }
 
-            // Enhanced error logging
             console.log('Register response status:', response.status);
             console.log('Register response data:', data);
 
@@ -234,7 +226,6 @@ function Register() {
                 let errorMessage = 'Registration failed due to server error.';
                 
                 if (response.status === 400) {
-                    // Check for serializer errors (e.g., email already exists, missing fields)
                     const errorDetail = data.email?.[0] || data.username?.[0] || data.password?.[0];
                     if (errorDetail) {
                         errorMessage = errorDetail;
@@ -254,7 +245,6 @@ function Register() {
 
             setSuccessMessage("Success! Your account is created. Redirecting to login...");
             
-            // Redirect after a short delay using React Router's navigate
             setTimeout(() => {
                 navigate('/login');
             }, 1000); 
@@ -284,7 +274,6 @@ function Register() {
                         </div>
                     )}
                     
-                    {/* Email Input */}
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                             Email address (will be used as Username)
@@ -303,7 +292,6 @@ function Register() {
                         />
                     </div>
 
-                    {/* Password Input */}
                     <div>
                         <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                             Password
@@ -340,18 +328,18 @@ function Register() {
                                 Registering...
                             </div>
                         ) : (
-                            <span className='flex items-center'><UserPlus size={20} className='mr-2' /> Sign Up</span>
+                            <span className='flex items-center'>Sign Up</span>
                         )}
                     </button>
                     
                     <div className="text-center text-sm">
                         Already have an account? 
-                        <Link 
-                            to="/login" 
+                        <a 
+                            href="/login" 
                             className="text-indigo-600 hover:text-indigo-500 font-medium ml-1"
                         >
                             Sign In
-                        </Link>
+                        </a>
                     </div>
                 </form>
             </div>
@@ -414,30 +402,37 @@ function App() {
     return (
         <Router>
             <Routes>
-                
-                {/* 1. LOGIN ROUTE (Public) */}
-                <Route 
-                    path="/login" 
-                    element={isLoggedIn ? <Navigate to="/" replace /> : <Login onLoginSuccess={handleLoginSuccess} />} 
-                />
-
-                {/* 2. REGISTER ROUTE (Public) */}
-                <Route 
-                    path="/register" 
-                    element={isLoggedIn ? <Navigate to="/" replace /> : <Register />} 
-                />
-                
-                {/* 3. PROTECTED LEARNER DASHBOARD ROUTE (Default) */}
+                {/* PUBLIC ROUTES */}
                 <Route 
                     path="/" 
+                    element={<LandingPage />} 
+                />
+                <Route 
+                    path="/login" 
+                    element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Login onLoginSuccess={handleLoginSuccess} />} 
+                />
+                <Route 
+                    path="/register" 
+                    element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Register />} 
+                />
+                
+                {/* PROTECTED ROUTES */}
+                <Route 
+                    path="/dashboard" 
                     element={
                         <ProtectedRoute>
                             <Dashboard logout={logout} /> 
                         </ProtectedRoute>
                     } 
                 />
-                
-                {/* 4. PROTECTED ADMIN DASHBOARD ROUTE */}
+                <Route 
+                    path="/courses" 
+                    element={
+                        <ProtectedRoute>
+                            <Courses />
+                        </ProtectedRoute>
+                    } 
+                />
                 <Route 
                     path="/admin" 
                     element={
@@ -447,9 +442,8 @@ function App() {
                     } 
                 />
                 
-                {/* Fallback route: catch all other paths */}
+                {/* Fallback route */}
                 <Route path="*" element={<Navigate to="/" replace />} />
-
             </Routes>
         </Router>
     );

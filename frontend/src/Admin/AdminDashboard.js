@@ -1,23 +1,27 @@
-// AdminDashboard.js
+// AdminDashboard.js - UPDATED WITH ALL SECTIONS
 
 import React, { useState } from 'react';
-import AdminTopicList from './AdminTopicList'; // Assuming you put the component here
+import AdminTopicList from './AdminTopicList';
 import AdminCourseList from './AdminCourseList';
 import AdminUserList from './AdminUserList';
+import AdminAnalytics from './AdminAnalytics';
+import AIConfigPanel from './AIConfigPanel';
 
 const AdminDashboard = () => {
-    // State to track which view is currently active: 'topics', 'courses', or 'users'
     const [currentView, setCurrentView] = useState('topics'); 
 
-    // Function to render the correct component based on state
     const renderContent = () => {
         switch (currentView) {
+            case 'analytics':
+                return <AdminAnalytics />;
             case 'topics':
                 return <AdminTopicList />;
             case 'courses':
                 return <AdminCourseList />;
             case 'users':
                 return <AdminUserList />;
+            case 'ai-config':
+                return <AIConfigPanel />;
             default:
                 return <AdminTopicList />;
         }
@@ -25,23 +29,27 @@ const AdminDashboard = () => {
 
     return (
         <div style={adminDashboardStyle}>
-            {/* Navigation Sidebar/Header */}
             <nav style={navBarStyle}>
                 <h1 style={logoStyle}>Admin Panel</h1>
                 <div style={navLinksStyle}>
+                    <button onClick={() => setCurrentView('analytics')} style={navLinkButtonStyle(currentView === 'analytics')}>
+                        📊 Analytics
+                    </button>
                     <button onClick={() => setCurrentView('topics')} style={navLinkButtonStyle(currentView === 'topics')}>
-                        Manage Topics
+                        📚 Topics
                     </button>
                     <button onClick={() => setCurrentView('courses')} style={navLinkButtonStyle(currentView === 'courses')}>
-                        Manage Courses
+                        🎓 Courses
                     </button>
                     <button onClick={() => setCurrentView('users')} style={navLinkButtonStyle(currentView === 'users')}>
-                        Manage Users
+                        👥 Users
+                    </button>
+                    <button onClick={() => setCurrentView('ai-config')} style={navLinkButtonStyle(currentView === 'ai-config')}>
+                        🤖 AI Config
                     </button>
                 </div>
             </nav>
 
-            {/* Main Content Area */}
             <div style={contentAreaStyle}>
                 {renderContent()}
             </div>
@@ -50,21 +58,56 @@ const AdminDashboard = () => {
 };
 
 // Basic Styling for the Admin Layout
-const adminDashboardStyle = { display: 'flex', minHeight: '100vh', backgroundColor: '#f9f9f9' };
-const navBarStyle = { width: '250px', backgroundColor: '#34495e', color: 'white', padding: '20px', display: 'flex', flexDirection: 'column' };
-const logoStyle = { fontSize: '1.5em', marginBottom: '40px', borderBottom: '2px solid #5d6d7e', paddingBottom: '10px' };
-const navLinksStyle = { display: 'flex', flexDirection: 'column', gap: '15px' };
+const adminDashboardStyle = { 
+    display: 'flex', 
+    minHeight: '100vh', 
+    backgroundColor: '#f9f9f9',
+    fontFamily: 'Arial, sans-serif'
+};
+
+const navBarStyle = { 
+    width: '280px', 
+    backgroundColor: '#2c3e50', 
+    color: 'white', 
+    padding: '25px', 
+    display: 'flex', 
+    flexDirection: 'column',
+    boxShadow: '2px 0 5px rgba(0,0,0,0.1)'
+};
+
+const logoStyle = { 
+    fontSize: '1.8em', 
+    marginBottom: '40px', 
+    borderBottom: '2px solid #34495e', 
+    paddingBottom: '15px',
+    textAlign: 'center'
+};
+
+const navLinksStyle = { 
+    display: 'flex', 
+    flexDirection: 'column', 
+    gap: '12px' 
+};
+
 const navLinkButtonStyle = (isActive) => ({
-    padding: '12px 15px',
+    padding: '15px 20px',
     textAlign: 'left',
-    backgroundColor: isActive ? '#5d6d7e' : 'transparent',
+    backgroundColor: isActive ? '#3498db' : 'transparent',
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: '8px',
     cursor: 'pointer',
-    fontSize: '1em',
-    transition: 'background-color 0.2s',
+    fontSize: '1.1em',
+    transition: 'all 0.3s ease',
+    fontWeight: isActive ? 'bold' : 'normal',
+    boxShadow: isActive ? '0 4px 8px rgba(52, 152, 219, 0.3)' : 'none',
 });
-const contentAreaStyle = { flexGrow: 1, padding: '30px', overflowY: 'auto' };
+
+const contentAreaStyle = { 
+    flexGrow: 1, 
+    padding: '30px', 
+    overflowY: 'auto',
+    backgroundColor: '#ecf0f1'
+};
 
 export default AdminDashboard;
