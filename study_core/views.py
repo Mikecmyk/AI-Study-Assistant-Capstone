@@ -294,3 +294,97 @@ def study_history_view(request):
     except Exception as e:
         print(f"Study history error: {e}")
         return Response({"history": []}, status=status.HTTP_200_OK)
+    
+# Add this new view function to your study_core/views.py
+
+@api_view(['POST'])
+def upload_summarize_view(request):
+    """Handles file upload and AI summarization"""
+    try:
+        if 'file' not in request.FILES:
+            return Response(
+                {"error": "No file provided"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        file = request.FILES['file']
+        upload_type = request.POST.get('upload_type', 'notes')
+        
+        # Validate file size (10MB max)
+        if file.size > 10 * 1024 * 1024:
+            return Response(
+                {"error": "File too large. Maximum size is 10MB."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        text_content = ""
+        
+        if upload_type == 'image':
+            # For images, we would use OCR
+            # Note: You'll need to install: pip install pytesseract pillow
+            try:
+                # This is a placeholder - implement OCR logic here
+                # For now, return a message about OCR
+                text_content = f"[OCR would process this image: {file.name}]\n\n"
+                text_content += "Image OCR processing would extract text here. "
+                text_content += "Install pytesseract and pillow for OCR functionality."
+                
+            except Exception as e:
+                return Response(
+                    {"error": f"Failed to process image: {str(e)}"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        else:
+            # For text-based documents
+            file_extension = file.name.split('.')[-1].lower()
+            
+            if file_extension == 'txt':
+                # Text file
+                text_content = file.read().decode('utf-8')
+                
+            elif file_extension == 'pdf':
+                # PDF processing - placeholder
+                # Install: pip install PyPDF2
+                text_content = f"[PDF content would be extracted from: {file.name}]\n\n"
+                text_content += "PDF text extraction would go here. Install PyPDF2 for PDF processing."
+                
+            elif file_extension in ['doc', 'docx']:
+                # Word document - placeholder  
+                # Install: pip install python-docx
+                text_content = f"[Word document content would be extracted from: {file.name}]\n\n"
+                text_content += "Word document text extraction would go here. Install python-docx for Word processing."
+                
+            else:
+                return Response(
+                    {"error": f"Unsupported file type: {file_extension}"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        # Generate AI summary
+        prompt = f"""
+        Please provide a comprehensive summary of the following content. 
+        Focus on the key points, main ideas, and important details.
+        
+        Content to summarize:
+        {text_content[:3000]}  # Limit content length for API
+        
+        Provide a well-structured summary that captures the essence of the material.
+        """
+        
+        generated_summary = generate_with_retry(prompt)
+        
+        return Response({
+            'summary': generated_summary,
+            'filename': file.name,
+            'file_type': upload_type,
+            'original_length': len(text_content),
+            'summary_length': len(generated_summary)
+        })
+        
+    except Exception as e:
+        print(f"Upload summarization error: {e}")
+        return Response(
+            {"error": f"Processing failed: {str(e)}"}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

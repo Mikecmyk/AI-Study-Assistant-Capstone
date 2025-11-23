@@ -1,4 +1,4 @@
-// Dashboard.js - WITH STUDY HISTORY TRACKING
+// Dashboard.js - WITH STUDY HISTORY TRACKING + DOCUMENT UPLOAD
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api'; 
 import StudyTools from './StudyTools';
@@ -7,6 +7,7 @@ import ProductivityChart from './ProductivityChart';
 import ScheduleCalendar from './ScheduleCalendar'; 
 import TopicManager from './TopicManager';
 import StudyHistory from './StudyHistory';
+import DocumentUpload from './DocumentUpload'; // ADD THIS IMPORT
 import { recordStudyProgress } from './ProductivityChart';
 import './Dashboard.css'; 
 import { Link } from 'react-router-dom';
@@ -67,11 +68,11 @@ function Dashboard({ logout }) {
     const handleCopyToClipboard = async () => {
         try {
             await navigator.clipboard.writeText(generatedContent);
-            setCopySuccess(' Copied to clipboard!');
+            setCopySuccess('✅ Copied to clipboard!');
             setTimeout(() => setCopySuccess(''), 3000); // Clear message after 3 seconds
         } catch (err) {
             console.error('Failed to copy: ', err);
-            setCopySuccess(' Failed to copy');
+            setCopySuccess('❌ Failed to copy');
             setTimeout(() => setCopySuccess(''), 3000);
         }
     };
@@ -275,10 +276,10 @@ function Dashboard({ logout }) {
             // ✅ SAVE TO STUDY HISTORY
             saveToStudyHistory(selectedTopic, duration, generatedContentText, 'study_plan');
             
-            alert(` Study session created successfully for ${specificArea}!`);
+            alert(`✅ Study session created successfully for ${specificArea}!`);
         } catch (err) {
             console.error(
-                " Error generating session:",
+                "❌ Error generating session:",
                 err.response ? err.response.data : err
             );
             setStudyPlanError(
@@ -350,6 +351,14 @@ function Dashboard({ logout }) {
                         </button>
                     </div>
                     <TopicManager onTopicAdded={handleTopicAdded} />
+                </div>
+
+                {/* ADD DOCUMENT UPLOAD COMPONENT HERE */}
+                <div className="dashboard-card">
+                    <DocumentUpload onSummaryGenerated={(data) => {
+                        console.log('Summary generated:', data);
+                        // You can handle the summary data here if needed
+                    }} />
                 </div>
 
                 <div className="dashboard-card">
