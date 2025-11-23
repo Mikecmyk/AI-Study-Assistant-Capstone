@@ -388,3 +388,75 @@ def upload_summarize_view(request):
             {"error": f"Processing failed: {str(e)}"}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    
+# Add this to your study_core/views.py
+
+@api_view(['POST'])
+def ai_tutor_chat_view(request):
+    """AI Tutor chat endpoint with context awareness"""
+    try:
+        data = request.data
+        user_message = data.get('message')
+        subject = data.get('subject', 'general')
+        difficulty = data.get('difficulty', 'beginner')
+        context = data.get('context', {})
+
+        if not user_message:
+            return Response(
+                {"error": "Message is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Build intelligent prompt based on subject and difficulty
+        subject_prompts = {
+            'math': "You are a mathematics tutor. Explain concepts clearly with examples.",
+            'science': "You are a science tutor. Focus on scientific principles and real-world applications.",
+            'physics': "You are a physics tutor. Explain physical concepts with practical examples.",
+            'chemistry': "You are a chemistry tutor. Focus on chemical reactions and properties.",
+            'biology': "You are a biology tutor. Explain biological concepts with diagrams in mind.",
+            'programming': "You are a programming tutor. Provide code examples and best practices.",
+            'general': "You are a general learning tutor. Adapt to the student's needs."
+        }
+
+        difficulty_levels = {
+            'beginner': "Explain like I'm a beginner. Use simple language and basic examples.",
+            'intermediate': "Explain for an intermediate learner. Include some technical details.",
+            'advanced': "Explain for an advanced learner. Include technical details and advanced concepts."
+        }
+
+        prompt = f"""
+        {subject_prompts.get(subject, subject_prompts['general'])}
+        {difficulty_levels.get(difficulty, difficulty_levels['beginner'])}
+        
+        Student's question: {user_message}
+        
+        Please provide:
+        1. A clear, step-by-step explanation
+        2. Relevant examples if applicable
+        3. Key takeaways
+        4. Follow-up questions to check understanding
+        
+        Keep the response engaging and educational.
+        """
+
+        # Add conversation context if available
+        if context.get('conversation_history'):
+            prompt += "\n\nPrevious conversation context:\n"
+            for msg in context['conversation_history']:
+                role = "Student" if msg['role'] == 'user' else "Tutor"
+                prompt += f"{role}: {msg['content']}\n"
+
+        generated_response = generate_with_retry(prompt)
+        
+        return Response({
+            "response": generated_response,
+            "subject": subject,
+            "difficulty": difficulty
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        print(f"AI Tutor error: {e}")
+        return Response(
+            {"error": "Tutor is unavailable. Please try again."}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

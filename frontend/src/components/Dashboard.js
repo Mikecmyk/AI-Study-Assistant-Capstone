@@ -1,4 +1,4 @@
-// Dashboard.js - WITH STUDY HISTORY TRACKING + DOCUMENT UPLOAD
+// Dashboard.js - WITH STUDY HISTORY TRACKING + DOCUMENT UPLOAD + AI TUTOR
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api'; 
 import StudyTools from './StudyTools';
@@ -7,7 +7,8 @@ import ProductivityChart from './ProductivityChart';
 import ScheduleCalendar from './ScheduleCalendar'; 
 import TopicManager from './TopicManager';
 import StudyHistory from './StudyHistory';
-import DocumentUpload from './DocumentUpload'; // ADD THIS IMPORT
+import DocumentUpload from './DocumentUpload';
+import AITutor from './AITutor'; // ADD AI TUTOR IMPORT
 import { recordStudyProgress } from './ProductivityChart';
 import './Dashboard.css'; 
 import { Link } from 'react-router-dom';
@@ -353,12 +354,17 @@ function Dashboard({ logout }) {
                     <TopicManager onTopicAdded={handleTopicAdded} />
                 </div>
 
-                {/* ADD DOCUMENT UPLOAD COMPONENT HERE */}
+                {/* DOCUMENT UPLOAD COMPONENT */}
                 <div className="dashboard-card">
                     <DocumentUpload onSummaryGenerated={(data) => {
                         console.log('Summary generated:', data);
                         // You can handle the summary data here if needed
                     }} />
+                </div>
+
+                {/* AI TUTOR COMPONENT */}
+                <div className="dashboard-card">
+                    <AITutor />
                 </div>
 
                 <div className="dashboard-card">
