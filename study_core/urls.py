@@ -24,4 +24,6 @@ urlpatterns = [
     path('upload-summarize/', views.upload_summarize_view, name='upload-summarize'),
 
      path('ai-tutor/chat/', views.ai_tutor_chat_view, name='ai-tutor-chat'),
+
+     path('ai-recommendations/', views.ai_recommendations_view, name='ai-recommendations'),
 ]

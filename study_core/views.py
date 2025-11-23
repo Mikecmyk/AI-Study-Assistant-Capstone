@@ -460,3 +460,104 @@ def ai_tutor_chat_view(request):
             {"error": "Tutor is unavailable. Please try again."}, 
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
+    
+# Add this to your study_core/views.py
+
+@api_view(['POST'])
+def ai_recommendations_view(request):
+    """Generate AI-powered study recommendations based on user's learning history"""
+    try:
+        data = request.data
+        analysis = data.get('analysis', {})
+        prompt = data.get('prompt', '')
+
+        # Use the existing generate_with_retry function
+        ai_response = generate_with_retry(prompt)
+        
+        # Parse AI response (this is a simplified version)
+        # In production, you'd want more robust parsing
+        try:
+            # Extract JSON from AI response
+            import re
+            json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+            if json_match:
+                import json
+                recommendations = json.loads(json_match.group())
+            else:
+                # Fallback if AI doesn't return proper JSON
+                recommendations = {
+                    "suggestions": [
+                        {
+                            "title": "Continue Current Focus",
+                            "description": "Build on your recent learning by diving deeper into your main subjects.",
+                            "reason": "Consistent focus leads to mastery",
+                            "priority": "high"
+                        }
+                    ],
+                    "gaps": [
+                        {
+                            "title": "Review Fundamentals",
+                            "description": "Regularly revisit basic concepts to strengthen your foundation.",
+                            "reason": "Strong foundations support advanced learning",
+                            "priority": "medium"
+                        }
+                    ],
+                    "nextSteps": [
+                        {
+                            "title": "Apply Knowledge",
+                            "description": "Start applying what you've learned to practical problems or projects.",
+                            "reason": "Application reinforces learning",
+                            "priority": "high"
+                        }
+                    ]
+                }
+        except:
+            # If parsing fails, use fallback
+            recommendations = get_fallback_recommendations()
+
+        return Response({
+            "recommendations": recommendations,
+            "analysis": analysis
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        print(f"AI recommendations error: {e}")
+        return Response(
+            {"error": "Failed to generate recommendations", "recommendations": get_fallback_recommendations()},
+            status=status.HTTP_200_OK  # Still return fallback recommendations
+        )
+
+def get_fallback_recommendations():
+    """Fallback recommendations when AI is unavailable"""
+    return {
+        "suggestions": [
+            {
+                "title": "Review Recent Topics",
+                "description": "Spend time reviewing what you've studied recently to reinforce your learning.",
+                "reason": "Regular review improves retention",
+                "priority": "high"
+            },
+            {
+                "title": "Practice Problems",
+                "description": "Solve practical exercises related to your subjects.",
+                "reason": "Practice builds skill and confidence",
+                "priority": "medium"
+            }
+        ],
+        "gaps": [
+            {
+                "title": "Identify Weak Areas",
+                "description": "Take time to identify topics you find challenging and focus on them.",
+                "reason": "Addressing weaknesses creates balanced knowledge",
+                "priority": "medium"
+            }
+        ],
+        "nextSteps": [
+            {
+                "title": "Set Learning Goals",
+                "description": "Define clear goals for what you want to achieve in your studies.",
+                "reason": "Goals provide direction and motivation",
+                "priority": "high"
+            }
+        ]
+    }

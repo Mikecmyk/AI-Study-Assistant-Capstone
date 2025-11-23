@@ -1,349 +1,398 @@
-// src/components/ScheduleCalendar.js (FIXED VERSION - NO WARNINGS)
+// ScheduleCalendar.js - WITH TASK INTEGRATION + REMINDERS
 import React, { useState, useEffect } from 'react';
-
-// Helper function to render a single event item
-const EventItem = ({ event, onEdit, onDelete }) => (
-    <div className="schedule-event-item">
-        <div className="event-indicator" style={{ backgroundColor: event.color }}></div>
-        <div className="event-details">
-            <p className="event-title">{event.title}</p>
-            <p className="event-time">{event.time}</p>
-            <p className="event-description">{event.description}</p>
-        </div>
-        <span className="event-subject-tag" style={{ backgroundColor: event.color, color: '#fff' }}>
-            {event.subject}
-        </span>
-        <div className="event-actions">
-            <button onClick={() => onEdit(event)} className="edit-btn">✏️</button>
-            <button onClick={() => onDelete(event.id)} className="delete-btn">🗑️</button>
-        </div>
-    </div>
-);
-
-// Event Form Component
-const EventForm = ({ event, onSave, onCancel }) => {
-    const [formData, setFormData] = useState({
-        title: '',
-        description: '',
-        subject: '',
-        date: '',
-        time: '',
-        type: 'session',
-        color: '#6c63ff'
-    });
-
-    useEffect(() => {
-        if (event) {
-            setFormData(event);
-        } else {
-            // Set default date to today
-            const today = new Date();
-            const formattedDate = today.toISOString().split('T')[0];
-            const formattedTime = today.toTimeString().slice(0, 5);
-            
-            setFormData(prev => ({
-                ...prev,
-                date: formattedDate,
-                time: formattedTime
-            }));
-        }
-    }, [event]);
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const eventData = {
-            ...formData,
-            id: event?.id || Date.now(),
-            timestamp: new Date(`${formData.date}T${formData.time}`).toISOString()
-        };
-        onSave(eventData);
-    };
-
-    return (
-        <div className="event-form-overlay">
-            <div className="event-form">
-                <h3>{event ? 'Edit Event' : 'Add New Event'}</h3>
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label>Title:</label>
-                        <input
-                            type="text"
-                            value={formData.title}
-                            onChange={(e) => setFormData({...formData, title: e.target.value})}
-                            required
-                        />
-                    </div>
-                    
-                    <div className="form-group">
-                        <label>Description:</label>
-                        <textarea
-                            value={formData.description}
-                            onChange={(e) => setFormData({...formData, description: e.target.value})}
-                            rows="3"
-                        />
-                    </div>
-                    
-                    <div className="form-group">
-                        <label>Subject:</label>
-                        <input
-                            type="text"
-                            value={formData.subject}
-                            onChange={(e) => setFormData({...formData, subject: e.target.value})}
-                            required
-                        />
-                    </div>
-                    
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label>Date:</label>
-                            <input
-                                type="date"
-                                value={formData.date}
-                                onChange={(e) => setFormData({...formData, date: e.target.value})}
-                                required
-                            />
-                        </div>
-                        
-                        <div className="form-group">
-                            <label>Time:</label>
-                            <input
-                                type="time"
-                                value={formData.time}
-                                onChange={(e) => setFormData({...formData, time: e.target.value})}
-                                required
-                            />
-                        </div>
-                    </div>
-                    
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label>Type:</label>
-                            <select
-                                value={formData.type}
-                                onChange={(e) => setFormData({...formData, type: e.target.value})}
-                            >
-                                <option value="session">Study Session</option>
-                                <option value="deadline">Deadline</option>
-                                <option value="exam">Exam</option>
-                                <option value="meeting">Meeting</option>
-                            </select>
-                        </div>
-                        
-                        <div className="form-group">
-                            <label>Color:</label>
-                            <select
-                                value={formData.color}
-                                onChange={(e) => setFormData({...formData, color: e.target.value})}
-                            >
-                                <option value="#6c63ff">Purple</option>
-                                <option value="#ffc107">Yellow</option>
-                                <option value="#dc3545">Red</option>
-                                <option value="#28a745">Green</option>
-                                <option value="#17a2b8">Blue</option>
-                                <option value="#fd7e14">Orange</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div className="form-actions">
-                        <button type="button" onClick={onCancel} className="cancel-btn">
-                            Cancel
-                        </button>
-                        <button type="submit" className="save-btn">
-                            {event ? 'Update' : 'Create'} Event
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    );
-};
+import './Dashboard.css';
 
 const ScheduleCalendar = () => {
     const [events, setEvents] = useState([]);
-    const [showForm, setShowForm] = useState(false);
-    const [editingEvent, setEditingEvent] = useState(null);
-    const [currentMonth, setCurrentMonth] = useState(new Date());
+    const [showEventForm, setShowEventForm] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(null);
+    const [newEvent, setNewEvent] = useState({
+        title: '',
+        topic: '',
+        date: '',
+        time: '',
+        duration: '1 hour',
+        description: '',
+        priority: 'medium'
+    });
 
     // Load events from localStorage on component mount
     useEffect(() => {
-        const savedEvents = localStorage.getItem('studyCalendarEvents');
+        const savedEvents = localStorage.getItem('studyEvents');
         if (savedEvents) {
             setEvents(JSON.parse(savedEvents));
-        } else {
-            // Initialize with mock data
-            const mockEvents = [
-                { 
-                    id: 1, 
-                    type: 'session', 
-                    title: 'Quantum Mechanics Review', 
-                    description: 'Review key concepts and practice problems',
-                    time: 'Today, 2:00 PM', 
-                    subject: 'Physics', 
-                    color: '#6c63ff',
-                    date: new Date().toISOString().split('T')[0],
-                    timestamp: new Date().toISOString()
-                },
-                { 
-                    id: 2, 
-                    type: 'deadline', 
-                    title: 'Grammar Test', 
-                    description: 'Complete all grammar exercises',
-                    time: 'Tomorrow, 10:00 AM', 
-                    subject: 'English', 
-                    color: '#ffc107',
-                    date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-                    timestamp: new Date(Date.now() + 86400000).toISOString()
-                }
-            ];
-            setEvents(mockEvents);
-            localStorage.setItem('studyCalendarEvents', JSON.stringify(mockEvents));
         }
     }, []);
 
     // Save events to localStorage whenever events change
     useEffect(() => {
-        localStorage.setItem('studyCalendarEvents', JSON.stringify(events));
+        localStorage.setItem('studyEvents', JSON.stringify(events));
+        
+        // Sync events to urgent tasks
+        syncEventsToTasks();
     }, [events]);
 
-    const handleAddEvent = () => {
-        setEditingEvent(null);
-        setShowForm(true);
+    // Sync calendar events to urgent tasks
+    const syncEventsToTasks = () => {
+        const today = new Date().toISOString().split('T')[0];
+        const upcomingEvents = events.filter(event => event.date >= today);
+        
+        const tasks = upcomingEvents.map(event => ({
+            id: `event-${event.id}`,
+            title: `Study: ${event.topic || event.title}`,
+            subject: event.topic || 'General Study',
+            difficulty: getPriorityLevel(event.priority),
+            dueTime: formatDueTime(event.date, event.time),
+            isCompleted: false,
+            eventId: event.id,
+            type: 'calendar_event'
+        }));
+
+        // Save to localStorage for urgent tasks
+        localStorage.setItem('calendarTasks', JSON.stringify(tasks));
+        
+        // Set up reminders
+        setupReminders(upcomingEvents);
     };
 
-    const handleEditEvent = (event) => {
-        setEditingEvent(event);
-        setShowForm(true);
+    const getPriorityLevel = (priority) => {
+        const priorityMap = {
+            'high': 'High',
+            'medium': 'Mid', 
+            'low': 'Easy'
+        };
+        return priorityMap[priority] || 'Mid';
+    };
+
+    const formatDueTime = (date, time) => {
+        const eventDate = new Date(`${date}T${time}`);
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        if (eventDate.toDateString() === today.toDateString()) {
+            return `Today, ${time}`;
+        } else if (eventDate.toDateString() === tomorrow.toDateString()) {
+            return `Tomorrow, ${time}`;
+        } else {
+            return eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+    };
+
+    const setupReminders = (upcomingEvents) => {
+        // Clear existing reminders
+        const existingReminders = JSON.parse(localStorage.getItem('activeReminders') || '[]');
+        existingReminders.forEach(reminderId => {
+            clearTimeout(reminderId);
+        });
+
+        const newReminders = [];
+        
+        upcomingEvents.forEach(event => {
+            const eventDateTime = new Date(`${event.date}T${event.time}`);
+            const reminderTime = new Date(eventDateTime.getTime() - 30 * 60 * 1000); // 30 minutes before
+            
+            const now = new Date();
+            const timeUntilReminder = reminderTime.getTime() - now.getTime();
+            
+            if (timeUntilReminder > 0) {
+                const reminderId = setTimeout(() => {
+                    showNotification(event);
+                }, timeUntilReminder);
+                
+                newReminders.push(reminderId);
+            }
+        });
+        
+        localStorage.setItem('activeReminders', JSON.stringify(newReminders));
+    };
+
+    const showNotification = (event) => {
+        if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("📚 Zonlus Study Reminder", {
+                body: `Time to study: ${event.topic || event.title}\nStarts in 30 minutes!`,
+                icon: "/favicon.ico",
+                tag: `study-reminder-${event.id}`
+            });
+        }
+        
+        // Fallback alert if notifications are blocked
+        alert(`🔔 Study Reminder!\n\n"${event.topic || event.title}"\nStarts in 30 minutes!`);
+    };
+
+    const requestNotificationPermission = () => {
+        if ("Notification" in window) {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    console.log("Notification permission granted");
+                }
+            });
+        }
+    };
+
+    // Initialize notification permission on component mount
+    useEffect(() => {
+        requestNotificationPermission();
+    }, []);
+
+    const handleDateClick = (date) => {
+        setSelectedDate(date);
+        setNewEvent({
+            title: '',
+            topic: '',
+            date: date,
+            time: '18:00',
+            duration: '1 hour',
+            description: '',
+            priority: 'medium'
+        });
+        setShowEventForm(true);
+    };
+
+    const handleAddEvent = (e) => {
+        e.preventDefault();
+        
+        const event = {
+            id: Date.now(),
+            ...newEvent,
+            createdAt: new Date().toISOString()
+        };
+        
+        setEvents(prev => [...prev, event]);
+        setShowEventForm(false);
+        setNewEvent({
+            title: '',
+            topic: '',
+            date: '',
+            time: '18:00',
+            duration: '1 hour',
+            description: '',
+            priority: 'medium'
+        });
+        
+        alert('✅ Study session added to calendar! It will appear in your urgent tasks.');
     };
 
     const handleDeleteEvent = (eventId) => {
-        if (window.confirm('Are you sure you want to delete this event?')) {
-            setEvents(events.filter(event => event.id !== eventId));
+        if (window.confirm('Are you sure you want to delete this study session?')) {
+            setEvents(prev => prev.filter(event => event.id !== eventId));
         }
     };
 
-    const handleSaveEvent = (eventData) => {
-        if (editingEvent) {
-            // Update existing event
-            setEvents(events.map(event => 
-                event.id === eventData.id ? eventData : event
-            ));
-        } else {
-            // Add new event
-            setEvents([...events, eventData]);
-        }
-        setShowForm(false);
-        setEditingEvent(null);
-    };
-
-    const handleCancelForm = () => {
-        setShowForm(false);
-        setEditingEvent(null);
+    const getEventsForDate = (date) => {
+        return events.filter(event => event.date === date);
     };
 
     // Generate calendar days for current month
     const generateCalendarDays = () => {
-        const year = currentMonth.getFullYear();
-        const month = currentMonth.getMonth();
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth();
+        
+        const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
         const daysInMonth = lastDay.getDate();
         
         const days = [];
-        const today = new Date();
         
+        // Add empty cells for days before the first day of month
+        for (let i = 0; i < firstDay.getDay(); i++) {
+            days.push(null);
+        }
+        
+        // Add days of the month
         for (let i = 1; i <= daysInMonth; i++) {
-            const date = new Date(year, month, i);
-            const hasEvent = events.some(event => 
-                new Date(event.timestamp).toDateString() === date.toDateString()
-            );
-            const isToday = date.toDateString() === today.toDateString();
-            
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
             days.push({
-                date: i,
-                dayName: date.toLocaleDateString('en-US', { weekday: 'short' }),
-                hasEvent,
-                isToday
+                date: dateStr,
+                day: i,
+                hasEvents: getEventsForDate(dateStr).length > 0,
+                isToday: dateStr === today.toISOString().split('T')[0]
             });
         }
         
-        return days.slice(0, 7); // Show first 7 days for simplicity
+        return days;
     };
 
     const calendarDays = generateCalendarDays();
 
     return (
         <div className="schedule-calendar-container">
-            {/* Header with Month/Controls */}
             <div className="calendar-header">
-                <h4>{currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h4>
-                <div className="calendar-controls">
-                    <button 
-                        onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}
-                        className="calendar-nav-btn"
-                    >
-                        ‹
-                    </button>
-                    <button 
-                        onClick={() => setCurrentMonth(new Date())}
-                        className="calendar-today-btn"
-                    >
-                        Today
-                    </button>
-                    <button 
-                        onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))}
-                        className="calendar-nav-btn"
-                    >
-                        ›
-                    </button>
-                </div>
+                <h4>📅 Study Calendar</h4>
+                <button 
+                    onClick={() => setShowEventForm(true)}
+                    className="add-event-button"
+                >
+                    + Add Study Session
+                </button>
             </div>
-            
-            {/* Visual Day Grid */}
+
             <div className="calendar-grid">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                    <div key={day} className="calendar-day-header">
+                        {day}
+                    </div>
+                ))}
+                
                 {calendarDays.map((day, index) => (
-                    <div 
-                        key={index} 
-                        className={`day-cell ${day.isToday ? 'current-day' : ''} ${day.hasEvent ? 'has-event' : ''}`}
+                    <div
+                        key={index}
+                        className={`day-cell ${day?.isToday ? 'current-day' : ''} ${day?.hasEvents ? 'has-event' : ''}`}
+                        onClick={() => day && handleDateClick(day.date)}
                     >
-                        <span>{day.dayName}</span>
-                        <div className="day-number">{day.date}</div>
-                        {day.hasEvent && <div className="event-dot"></div>}
+                        {day && (
+                            <>
+                                <div className="day-number">{day.day}</div>
+                                {day.hasEvents && <div className="event-dot"></div>}
+                            </>
+                        )}
                     </div>
                 ))}
             </div>
 
-            {/* Upcoming Events List */}
             <div className="upcoming-events-list">
-                <h4>Upcoming Events ({events.length})</h4>
+                <h4>📋 Upcoming Study Sessions</h4>
                 <div className="events-scroll-container">
-                    {events
-                        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
-                        .map(event => (
-                            <EventItem 
-                                key={event.id} 
-                                event={event}
-                                onEdit={handleEditEvent}
-                                onDelete={handleDeleteEvent}
-                            />
-                        ))
-                    }
-                    {events.length === 0 && (
-                        <p className="no-events">No events scheduled. Add your first event!</p>
+                    {events.filter(event => event.date >= new Date().toISOString().split('T')[0])
+                          .sort((a, b) => new Date(a.date + 'T' + a.time) - new Date(b.date + 'T' + b.time))
+                          .slice(0, 5)
+                          .map(event => (
+                        <div key={event.id} className="schedule-event-item">
+                            <div className="event-indicator" style={{
+                                backgroundColor: event.priority === 'high' ? '#ef4444' : 
+                                               event.priority === 'medium' ? '#f59e0b' : '#10b981'
+                            }}></div>
+                            <div className="event-details">
+                                <div className="event-title">{event.topic || event.title}</div>
+                                <div className="event-time">
+                                    {new Date(event.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} at {event.time}
+                                </div>
+                                <div className="event-description">{event.description}</div>
+                            </div>
+                            <div className="event-actions">
+                                <button 
+                                    onClick={() => handleDeleteEvent(event.id)}
+                                    className="delete-btn"
+                                    title="Delete event"
+                                >
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                    {events.filter(event => event.date >= new Date().toISOString().split('T')[0]).length === 0 && (
+                        <div className="no-events">
+                            No upcoming study sessions. Add one to get started!
+                        </div>
                     )}
                 </div>
             </div>
 
-            <button className="add-event-button action-button" onClick={handleAddEvent}>
-                + Add New Event
-            </button>
-
             {/* Event Form Modal */}
-            {showForm && (
-                <EventForm 
-                    event={editingEvent}
-                    onSave={handleSaveEvent}
-                    onCancel={handleCancelForm}
-                />
+            {showEventForm && (
+                <div className="event-form-overlay">
+                    <div className="event-form">
+                        <h3>📚 Add Study Session</h3>
+                        <form onSubmit={handleAddEvent}>
+                            <div className="form-group">
+                                <label>Session Title *</label>
+                                <input
+                                    type="text"
+                                    value={newEvent.title}
+                                    onChange={(e) => setNewEvent(prev => ({...prev, title: e.target.value}))}
+                                    placeholder="e.g., Math Review Session"
+                                    required
+                                />
+                            </div>
+                            
+                            <div className="form-group">
+                                <label>Study Topic *</label>
+                                <input
+                                    type="text"
+                                    value={newEvent.topic}
+                                    onChange={(e) => setNewEvent(prev => ({...prev, topic: e.target.value}))}
+                                    placeholder="e.g., Calculus Derivatives"
+                                    required
+                                />
+                            </div>
+                            
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Date *</label>
+                                    <input
+                                        type="date"
+                                        value={newEvent.date}
+                                        onChange={(e) => setNewEvent(prev => ({...prev, date: e.target.value}))}
+                                        required
+                                        min={new Date().toISOString().split('T')[0]}
+                                    />
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Time *</label>
+                                    <input
+                                        type="time"
+                                        value={newEvent.time}
+                                        onChange={(e) => setNewEvent(prev => ({...prev, time: e.target.value}))}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Duration</label>
+                                    <select
+                                        value={newEvent.duration}
+                                        onChange={(e) => setNewEvent(prev => ({...prev, duration: e.target.value}))}
+                                    >
+                                        <option value="30 minutes">30 minutes</option>
+                                        <option value="1 hour">1 hour</option>
+                                        <option value="1.5 hours">1.5 hours</option>
+                                        <option value="2 hours">2 hours</option>
+                                        <option value="3 hours">3 hours</option>
+                                    </select>
+                                </div>
+                                
+                                <div className="form-group">
+                                    <label>Priority</label>
+                                    <select
+                                        value={newEvent.priority}
+                                        onChange={(e) => setNewEvent(prev => ({...prev, priority: e.target.value}))}
+                                    >
+                                        <option value="low">Low</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="high">High</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div className="form-group">
+                                <label>Description</label>
+                                <textarea
+                                    value={newEvent.description}
+                                    onChange={(e) => setNewEvent(prev => ({...prev, description: e.target.value}))}
+                                    placeholder="What will you focus on during this study session?"
+                                    rows="3"
+                                />
+                            </div>
+                            
+                            <div className="form-actions">
+                                <button 
+                                    type="button" 
+                                    onClick={() => setShowEventForm(false)}
+                                    className="cancel-btn"
+                                >
+                                    Cancel
+                                </button>
+                                <button type="submit" className="save-btn">
+                                    Add to Calendar
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             )}
         </div>
     );
