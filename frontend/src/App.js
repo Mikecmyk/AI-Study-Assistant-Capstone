@@ -11,6 +11,14 @@ import LandingPage from './components/LandingPage'; // Add this import
 // =================================================================
 
 // --- Login Component ---
+
+// Add this at the top of your App.js
+console.log('Frontend Environment Variables:', {
+  API_URL: process.env.REACT_APP_API_URL,
+  BACKEND_URL: process.env.REACT_APP_BACKEND_URL,
+  NODE_ENV: process.env.NODE_ENV
+});
+
 function Login({ onLoginSuccess }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

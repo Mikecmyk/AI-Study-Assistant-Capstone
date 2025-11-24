@@ -3,36 +3,26 @@ Django settings for study_config project.
 """
 import os
 from pathlib import Path
-from decouple import config # Used for reading .env locally and environment variables on Render
-import dj_database_url # Used for parsing the DATABASE_URL connection string
+from decouple import config
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# --- Deployment Configuration (Production vs. Local) ---
-
-# SECURITY WARNING: keep the secret key used in production secret!
-# Updated with fallback for Render environment variables
+# --- Deployment Configuration ---
 SECRET_KEY = config('SECRET_KEY', default=os.environ.get('SECRET_KEY', 'django-insecure-fallback-key-for-development-only'))
-
-# Check environment variable for Debug status. Crucial for switching behavior.
 DEBUG = config('DEBUG', default=os.environ.get('DEBUG', 'True') == 'True', cast=bool)
 
-# ALLOWED_HOSTS configuration - Updated for Render
+# ALLOWED_HOSTS configuration
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS = [RENDER_EXTERNAL_HOSTNAME, '.onrender.com']
+    ALLOWED_HOSTS = [RENDER_EXTERNAL_HOSTNAME, '.onrender.com', 'ai-study-assistant-capstone-1.onrender.com']
 elif DEBUG:
-    # Local development hosts
     ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 else:
-    # Production on Render and any custom domains
-    ALLOWED_HOSTS = ['.onrender.com']
-
+    ALLOWED_HOSTS = ['.onrender.com', 'ai-study-assistant-capstone-1.onrender.com']
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -47,21 +37,14 @@ INSTALLED_APPS = [
     'users',
 ]
 
-# --- WhiteNoise Static File Setup & Security Middleware ---
-# WhiteNoise handles static file serving in production on Render.
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware', # Required for React communication
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    # ADD WhiteNoise IMMEDIATELY AFTER SecurityMiddleware
     'whitenoise.middleware.WhiteNoiseMiddleware', 
-
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-
-    # Ensure Auth is BEFORE CSRF
     'django.contrib.auth.middleware.AuthenticationMiddleware', 
     'django.middleware.csrf.CsrfViewMiddleware',
-
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -71,7 +54,7 @@ ROOT_URLCONF = 'study_config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],  # ✅ REMOVED React template directory
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -85,14 +68,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'study_config.wsgi.application'
 
-
-# ------------------------------------
-# | DATABASE Configuration (Switching) |
-# ------------------------------------
-# Use SQLite for local development (if DEBUG=True) or PostgreSQL in production.
-
+# Database Configuration
 if DEBUG and not os.environ.get('DATABASE_URL'):
-    # Local SQLite database
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -100,8 +77,6 @@ if DEBUG and not os.environ.get('DATABASE_URL'):
         }
     }
 else:
-    # Production PostgreSQL database - reads connection string from DATABASE_URL env var
-    # conn_max_age is good for connection pooling on the service
     DATABASES = {
         'default': dj_database_url.config(
             default=config('DATABASE_URL', default=os.environ.get('DATABASE_URL')),
@@ -110,10 +85,7 @@ else:
         )
     }
 
-
 # Password validation
-# https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -129,80 +101,49 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/5.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
-# --- Static files (CSS, JavaScript, Images) ---
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
-
+# Static files
 STATIC_URL = '/static/'
-# FIXED: STATIC_ROOT should always be set (this is where collectstatic puts files)
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# ✅ REMOVED React static files - backend only serves its own static files
-# STATICFILES_DIRS = [
-#     BASE_DIR / 'frontend/build/static',  # ❌ REMOVED
-# ]
-
 if not DEBUG:
-    # Configure WhiteNoise storage backend with compression and versioning
     STORAGES = {
         "staticfiles": {
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
 
-# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-# --- CORS (Cross-Origin Resource Sharing) Configuration ---
-CORS_ALLOW_ALL_ORIGINS = False # Good practice: explicitly list allowed origins
-
-# Get the production front-end URL from environment variables
-# Fallback to local for development - UPDATED WITH PLACEHOLDER
-FRONTEND_URL = config('FRONTEND_URL', default=os.environ.get('FRONTEND_URL', 'http://localhost:3000'))
+# --- CORS Configuration ---
+CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000", # Local React Dev Server
+    "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "http://localhost:5173", # Vite dev server
+    "http://localhost:5173", 
     "http://127.0.0.1:5173",
-    FRONTEND_URL,           # Production Render URL
-    "https://ai-study-assistant-frontend.onrender.com",  # Add this explicitly
-    "https://ai-study-assistant-capstone-2.onrender.com",  # ✅ ADD YOUR FRONTEND URL HERE
+    "https://ai-study-assistant-capstone-2.onrender.com",  # Your frontend
 ]
 
-# Add the FRONTEND_URL to CSRF trusted origins if it exists
-csrf_trusted_origins = [
+CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000", 
     "http://127.0.0.1:3000",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    'https://*.onrender.com',
-    "https://ai-study-assistant-frontend.onrender.com",  # Add this explicitly
-    "https://ai-study-assistant-capstone-2.onrender.com",  # ✅ ADD YOUR FRONTEND URL HERE
+    "https://*.onrender.com",
+    "https://ai-study-assistant-capstone-1.onrender.com",  # Your backend
+    "https://ai-study-assistant-capstone-2.onrender.com",  # Your frontend
 ]
-
-if FRONTEND_URL:
-    csrf_trusted_origins.append(FRONTEND_URL)
-
-CSRF_TRUSTED_ORIGINS = csrf_trusted_origins
 
 CORS_ALLOW_CREDENTIALS = True
 
-
-# --- Django REST Framework Configuration ---
+# Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
@@ -210,6 +151,5 @@ REST_FRAMEWORK = {
     ),
 }
 
-# --- AI Key ---
-# Updated with proper fallbacks for Render
+# AI Key
 GEMINI_API_KEY = config('GEMINI_API_KEY', default=os.environ.get('GEMINI_API_KEY', ''))
