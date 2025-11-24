@@ -4,13 +4,12 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "r
 import Courses from './components/Courses';
 import Dashboard from './components/Dashboard';
 import AdminDashboard from './Admin/AdminDashboard';
-import LandingPage from './components/LandingPage'; // Add this import
+import LandingPage from './components/LandingPage';
+import api from './api'; // Import your api configuration
 
 // =================================================================
 // 1. COMPONENTS
 // =================================================================
-
-// --- Login Component ---
 
 // Add this at the top of your App.js
 console.log('Frontend Environment Variables:', {
@@ -37,43 +36,16 @@ function Login({ onLoginSuccess }) {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/auth/login/', { 
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email: email, password }),
+            //  FIXED: Use api.post() instead of fetch with localhost
+            const response = await api.post('/auth/login/', { 
+                email: email, 
+                password: password 
             });
 
-            let data = {};
-            try {
-                data = await response.json();
-            } catch (jsonError) {
-                console.warn("Could not parse response as JSON. Treating as non-structured error.");
-            }
-
             console.log('Login response status:', response.status);
-            console.log('Login response data:', data);
+            console.log('Login response data:', response.data);
 
-            if (!response.ok) {
-                let errorMessage = `Login failed (Status: ${response.status}).`;
-                
-                if (response.status === 401) {
-                    errorMessage = "Invalid credentials. Please try again.";
-                } else if (response.status === 400 && data.non_field_errors) {
-                    errorMessage = data.non_field_errors[0];
-                } else if (data.email) {
-                    errorMessage = data.email[0];
-                } else if (data.username) {
-                    errorMessage = data.username[0];
-                } else if (data.password) {
-                    errorMessage = data.password[0];
-                } else {
-                    errorMessage = data.detail || data.message || errorMessage;
-                }
-                
-                throw new Error(errorMessage);
-            }
+            const data = response.data;
             
             // SUCCESS PATH
             const authToken = data.token || data.key;
@@ -88,8 +60,31 @@ function Login({ onLoginSuccess }) {
             }
 
         } catch (error) {
-            console.error("Login attempt failed:", error.message);
-            setError(error.message);
+            console.error("Login attempt failed:", error);
+            
+            //  FIXED: Better error handling for axios
+            if (error.response) {
+                const status = error.response.status;
+                const errorData = error.response.data;
+                
+                if (status === 401) {
+                    setError("Invalid credentials. Please try again.");
+                } else if (status === 400 && errorData.non_field_errors) {
+                    setError(errorData.non_field_errors[0]);
+                } else if (errorData.email) {
+                    setError(errorData.email[0]);
+                } else if (errorData.username) {
+                    setError(errorData.username[0]);
+                } else if (errorData.password) {
+                    setError(errorData.password[0]);
+                } else {
+                    setError(errorData.detail || errorData.message || `Login failed (Status: ${status})`);
+                }
+            } else if (error.request) {
+                setError("Cannot connect to server. Please check your connection.");
+            } else {
+                setError(error.message || "An unexpected error occurred");
+            }
         } finally {
             setIsLoading(false); 
         }
@@ -193,7 +188,6 @@ function Register() {
     const [error, setError] = useState(''); 
     const [successMessage, setSuccessMessage] = useState('');
     
-    // Initialize useNavigate hook - FIXED
     const navigate = useNavigate();
 
     const handleRegister = async (e) => { 
@@ -214,42 +208,17 @@ function Register() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/auth/register/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, username: email }),
+            //  FIXED: Use api.post() instead of fetch with localhost
+            const response = await api.post('/auth/register/', {
+                email, 
+                password, 
+                username: email 
             });
 
-            let data = {};
-            try {
-                data = await response.json();
-            } catch (jsonError) {
-                console.warn("Could not parse response as JSON. Treating as non-structured error.");
-            }
-
             console.log('Register response status:', response.status);
-            console.log('Register response data:', data);
+            console.log('Register response data:', response.data);
 
-            if (!response.ok) {
-                let errorMessage = 'Registration failed due to server error.';
-                
-                if (response.status === 400) {
-                    const errorDetail = data.email?.[0] || data.username?.[0] || data.password?.[0];
-                    if (errorDetail) {
-                        errorMessage = errorDetail;
-                    } else if (data.detail || data.message) {
-                        errorMessage = data.detail || data.message;
-                    } else if (data.non_field_errors) {
-                        errorMessage = data.non_field_errors[0];
-                    } else {
-                        errorMessage = `Registration failed with status: ${response.status}`;
-                    }
-                } else {
-                     errorMessage = `Registration failed with status: ${response.status}`;
-                }
-                
-                throw new Error(errorMessage);
-            }
+            const data = response.data;
 
             setSuccessMessage("Success! Your account is created. Redirecting to login...");
             
@@ -258,8 +227,32 @@ function Register() {
             }, 1000); 
 
         } catch (error) {
-            console.error("Registration attempt failed:", error.message);
-            setError(error.message);
+            console.error("Registration attempt failed:", error);
+            
+            //  FIXED: Better error handling for axios
+            if (error.response) {
+                const status = error.response.status;
+                const errorData = error.response.data;
+                
+                if (status === 400) {
+                    const errorDetail = errorData.email?.[0] || errorData.username?.[0] || errorData.password?.[0];
+                    if (errorDetail) {
+                        setError(errorDetail);
+                    } else if (errorData.detail || errorData.message) {
+                        setError(errorData.detail || errorData.message);
+                    } else if (errorData.non_field_errors) {
+                        setError(errorData.non_field_errors[0]);
+                    } else {
+                        setError(`Registration failed with status: ${status}`);
+                    }
+                } else {
+                    setError(`Registration failed with status: ${status}`);
+                }
+            } else if (error.request) {
+                setError("Cannot connect to server. Please check your connection.");
+            } else {
+                setError(error.message || "An unexpected error occurred");
+            }
         } finally {
             setIsLoading(false); 
         }
@@ -359,7 +352,6 @@ function Register() {
 // 2. AUTH HOOK & PROTECTED ROUTE
 // =================================================================
 
-// --- AUTHENTICATION CONTEXT/HOOK ---
 const useAuth = () => {
     const [token, setToken] = useState(localStorage.getItem('token'));
     
@@ -381,7 +373,6 @@ const useAuth = () => {
     return { isLoggedIn, isAdmin, logout, setToken };
 };
 
-// --- Component to Protect Routes ---
 const ProtectedRoute = ({ children, isAdminRequired }) => {
     const { isLoggedIn, isAdmin } = useAuth(); 
 
