@@ -1,9 +1,8 @@
-# study_config/urls.py - UPDATED VERSION
+# study_config/urls.py - API-ONLY VERSION
 
 from django.contrib import admin
-from django.urls import path, include, re_path
+from django.urls import path, include
 from django.views.generic.base import RedirectView 
-from django.views.generic import TemplateView  # ADD THIS
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -20,8 +19,7 @@ urlpatterns = [
     # 4. Redirect root to API
     path('', RedirectView.as_view(url='api/', permanent=True)), 
     
-    # 🔥 ADD THIS CATCH-ALL ROUTE FOR REACT (MUST BE LAST)
-    re_path(r'^(?!api/|admin/).*$', TemplateView.as_view(template_name='index.html')),
+    #  REMOVED catch-all route for React - frontend handles its own routing
 ]
 
 # Serve static files in development

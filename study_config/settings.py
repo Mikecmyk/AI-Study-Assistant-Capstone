@@ -71,10 +71,7 @@ ROOT_URLCONF = 'study_config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            # ADDED: Point to React build directory for serving index.html
-            BASE_DIR / 'frontend/build',
-        ],
+        'DIRS': [],  # ✅ REMOVED React template directory
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -152,10 +149,10 @@ STATIC_URL = '/static/'
 # FIXED: STATIC_ROOT should always be set (this is where collectstatic puts files)
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# ADDED: Serve React static files
-STATICFILES_DIRS = [
-    BASE_DIR / 'frontend/build/static',
-]
+# ✅ REMOVED React static files - backend only serves its own static files
+# STATICFILES_DIRS = [
+#     BASE_DIR / 'frontend/build/static',  # ❌ REMOVED
+# ]
 
 if not DEBUG:
     # Configure WhiteNoise storage backend with compression and versioning
@@ -183,6 +180,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5173",
     FRONTEND_URL,           # Production Render URL
     "https://ai-study-assistant-frontend.onrender.com",  # Add this explicitly
+    "https://ai-study-assistant-capstone-2.onrender.com",  # ✅ ADD YOUR FRONTEND URL HERE
 ]
 
 # Add the FRONTEND_URL to CSRF trusted origins if it exists
@@ -193,6 +191,7 @@ csrf_trusted_origins = [
     "http://127.0.0.1:5173",
     'https://*.onrender.com',
     "https://ai-study-assistant-frontend.onrender.com",  # Add this explicitly
+    "https://ai-study-assistant-capstone-2.onrender.com",  # ✅ ADD YOUR FRONTEND URL HERE
 ]
 
 if FRONTEND_URL:
