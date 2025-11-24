@@ -30,7 +30,6 @@ const AITutor = () => {
         'advanced': 'Advanced'
     };
 
-    // Auto-scroll to bottom of messages
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
@@ -39,11 +38,10 @@ const AITutor = () => {
         scrollToBottom();
     }, [messages]);
 
-    // Initialize with welcome message
     useEffect(() => {
         const welcomeMessage = {
             id: 1,
-            text: "👋 Hello! I'm your AI Tutor. I can help you with various subjects and explain concepts step-by-step. What would you like to learn today?",
+            text: "Hello! I'm your AI Tutor. I can help you with various subjects and explain concepts step-by-step. What would you like to learn today?",
             sender: 'tutor',
             timestamp: new Date().toLocaleTimeString()
         };
@@ -66,11 +64,10 @@ const AITutor = () => {
         setIsLoading(true);
 
         try {
-            // Build context for the AI
             const context = {
                 subject: selectedSubject,
                 difficulty: difficulty,
-                conversation_history: conversationHistory.slice(-6), // Last 3 exchanges
+                conversation_history: conversationHistory.slice(-6),
                 current_question: inputMessage
             };
 
@@ -91,14 +88,12 @@ const AITutor = () => {
 
             setMessages(prev => [...prev, tutorMessage]);
             
-            // Update conversation history
             setConversationHistory(prev => [
                 ...prev,
                 { role: 'user', content: inputMessage },
                 { role: 'assistant', content: response.data.response }
             ]);
 
-            // Save to study history
             saveToStudyHistory(inputMessage, response.data.response);
 
         } catch (error) {
@@ -143,7 +138,7 @@ const AITutor = () => {
     const clearConversation = () => {
         const welcomeMessage = {
             id: Date.now(),
-            text: "👋 Hello! I'm your AI Tutor. What would you like to learn now?",
+            text: "Hello! I'm your AI Tutor. What would you like to learn now?",
             sender: 'tutor',
             timestamp: new Date().toLocaleTimeString()
         };
@@ -175,7 +170,7 @@ const AITutor = () => {
     return (
         <div className="ai-tutor">
             <div className="tutor-header">
-                <h3>🤖 AI Tutor</h3>
+                <h3>AI Tutor</h3>
                 <div className="tutor-controls">
                     <select 
                         value={selectedSubject} 
@@ -198,12 +193,11 @@ const AITutor = () => {
                     </select>
 
                     <button onClick={clearConversation} className="clear-chat-btn">
-                        🗑️ Clear
+                        Clear
                     </button>
                 </div>
             </div>
 
-            {/* Quick Questions */}
             {quickQuestions[selectedSubject] && (
                 <div className="quick-questions">
                     <h4>Quick Questions:</h4>
@@ -221,7 +215,6 @@ const AITutor = () => {
                 </div>
             )}
 
-            {/* Chat Messages */}
             <div className="chat-messages">
                 {messages.map((message) => (
                     <div
@@ -248,7 +241,6 @@ const AITutor = () => {
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Form */}
             <form onSubmit={handleSendMessage} className="message-form">
                 <div className="input-container">
                     <input
@@ -264,7 +256,7 @@ const AITutor = () => {
                         disabled={isLoading || !inputMessage.trim()}
                         className="send-button"
                     >
-                        {isLoading ? '⏳' : '🚀'}
+                        {isLoading ? 'Sending...' : 'Send'}
                     </button>
                 </div>
                 <small className="input-hint">
@@ -272,9 +264,8 @@ const AITutor = () => {
                 </small>
             </form>
 
-            {/* Tutor Tips */}
             <div className="tutor-tips">
-                <h4>💡 Tutor Tips:</h4>
+                <h4>Tutor Tips:</h4>
                 <ul>
                     <li>Ask for step-by-step explanations</li>
                     <li>Request examples for better understanding</li>

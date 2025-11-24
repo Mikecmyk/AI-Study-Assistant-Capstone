@@ -7,9 +7,8 @@ const DocumentUpload = ({ onSummaryGenerated }) => {
     const [isUploading, setIsUploading] = useState(false);
     const [summary, setSummary] = useState('');
     const [error, setError] = useState('');
-    const [uploadType, setUploadType] = useState('notes'); // 'notes' or 'image'
+    const [uploadType, setUploadType] = useState('notes');
 
-    // Supported file types
     const supportedTextTypes = ['.txt', '.pdf', '.doc', '.docx'];
     const supportedImageTypes = ['.jpg', '.jpeg', '.png', '.gif', '.bmp'];
 
@@ -17,7 +16,6 @@ const DocumentUpload = ({ onSummaryGenerated }) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Validate file type
         const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
         
         if (uploadType === 'notes') {
@@ -32,7 +30,6 @@ const DocumentUpload = ({ onSummaryGenerated }) => {
             }
         }
 
-        // Validate file size (10MB max)
         if (file.size > 10 * 1024 * 1024) {
             setError('File size too large. Please upload files smaller than 10MB.');
             return;
@@ -58,7 +55,7 @@ const DocumentUpload = ({ onSummaryGenerated }) => {
             formData.append('file', selectedFile);
             formData.append('upload_type', uploadType);
 
-            console.log('📤 Uploading file:', selectedFile.name);
+            console.log('Uploading file:', selectedFile.name);
 
             const response = await api.post('/upload-summarize/', formData, {
                 headers: {
@@ -69,10 +66,8 @@ const DocumentUpload = ({ onSummaryGenerated }) => {
             const generatedSummary = response.data.summary;
             setSummary(generatedSummary);
 
-            // Save to study history
             saveToStudyHistory(selectedFile.name, generatedSummary, 'document_summary');
 
-            // Notify parent component if needed
             if (onSummaryGenerated) {
                 onSummaryGenerated({
                     filename: selectedFile.name,
@@ -81,10 +76,10 @@ const DocumentUpload = ({ onSummaryGenerated }) => {
                 });
             }
 
-            console.log('✅ Summary generated successfully');
+            console.log('Summary generated successfully');
 
         } catch (err) {
-            console.error('❌ Upload failed:', err);
+            console.error('Upload failed:', err);
             setError(
                 err.response?.data?.error || 
                 'Failed to process file. Please try again.'
@@ -94,7 +89,6 @@ const DocumentUpload = ({ onSummaryGenerated }) => {
         }
     };
 
-    // Save to study history function
     const saveToStudyHistory = (filename, content, type) => {
         const studySession = {
             id: Date.now(),
@@ -113,13 +107,13 @@ const DocumentUpload = ({ onSummaryGenerated }) => {
         const updatedHistory = [studySession, ...history].slice(0, 50);
         localStorage.setItem('studyHistory', JSON.stringify(updatedHistory));
         
-        console.log('📚 Saved document summary to history');
+        console.log('Saved document summary to history');
     };
 
     const handleCopySummary = async () => {
         try {
             await navigator.clipboard.writeText(summary);
-            alert('✅ Summary copied to clipboard!');
+            alert('Summary copied to clipboard!');
         } catch (err) {
             console.error('Failed to copy:', err);
         }
@@ -139,16 +133,14 @@ const DocumentUpload = ({ onSummaryGenerated }) => {
         setSelectedFile(null);
         setSummary('');
         setError('');
-        // Reset file input
         document.getElementById('file-input').value = '';
     };
 
     return (
         <div className="document-upload">
-            <h3>📁 Upload & Summarize</h3>
+            <h3>Upload & Summarize</h3>
             <p className="upload-subtitle">Upload notes or images for AI-powered summarization</p>
 
-            {/* Upload Type Selection */}
             <div className="upload-type-selector">
                 <label>
                     <input
@@ -157,7 +149,7 @@ const DocumentUpload = ({ onSummaryGenerated }) => {
                         checked={uploadType === 'notes'}
                         onChange={(e) => setUploadType(e.target.value)}
                     />
-                    📝 Notes/Documents
+                    Notes/Documents
                 </label>
                 <label>
                     <input
@@ -166,11 +158,10 @@ const DocumentUpload = ({ onSummaryGenerated }) => {
                         checked={uploadType === 'image'}
                         onChange={(e) => setUploadType(e.target.value)}
                     />
-                    🖼️ Image/Photo
+                    Image/Photo
                 </label>
             </div>
 
-            {/* File Type Info */}
             <div className="file-type-info">
                 {uploadType === 'notes' ? (
                     <small>Supported: {supportedTextTypes.join(', ')} (Max 10MB)</small>
@@ -179,7 +170,6 @@ const DocumentUpload = ({ onSummaryGenerated }) => {
                 )}
             </div>
 
-            {/* File Upload Area */}
             <div className="upload-area">
                 <input
                     id="file-input"
@@ -200,35 +190,32 @@ const DocumentUpload = ({ onSummaryGenerated }) => {
                             onClick={resetUpload}
                             className="clear-file-btn"
                         >
-                            ✕
+                            Remove
                         </button>
                     </div>
                 )}
             </div>
 
-            {/* Upload Button */}
             <button
                 onClick={handleUpload}
                 disabled={!selectedFile || isUploading}
                 className="upload-button"
             >
-                {isUploading ? '🔄 Processing...' : '🚀 Generate AI Summary'}
+                {isUploading ? 'Processing...' : 'Generate AI Summary'}
             </button>
 
-            {/* Error Message */}
             {error && <div className="error-message">{error}</div>}
 
-            {/* Generated Summary */}
             {summary && (
                 <div className="summary-result">
                     <div className="summary-header">
-                        <h4>📋 AI Summary:</h4>
+                        <h4>AI Summary:</h4>
                         <div className="summary-actions">
                             <button onClick={handleCopySummary} className="action-btn">
-                                📋 Copy
+                                Copy
                             </button>
                             <button onClick={handleDownloadSummary} className="action-btn">
-                                📥 Download
+                                Download
                             </button>
                         </div>
                     </div>
@@ -238,9 +225,8 @@ const DocumentUpload = ({ onSummaryGenerated }) => {
                 </div>
             )}
 
-            {/* Usage Tips */}
             <div className="upload-tips">
-                <h4>💡 Tips for Best Results:</h4>
+                <h4>Tips for Best Results:</h4>
                 <ul>
                     <li>For documents: Use clear, well-structured text files</li>
                     <li>For images: Ensure text is clear and readable</li>

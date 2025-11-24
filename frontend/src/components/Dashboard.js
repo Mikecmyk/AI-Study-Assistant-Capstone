@@ -9,7 +9,7 @@ import TopicManager from './TopicManager';
 import StudyHistory from './StudyHistory';
 import DocumentUpload from './DocumentUpload';
 import AITutor from './AITutor';
-import AIRecommendations from './AIRecommendations'; // ADD AI RECOMMENDATIONS IMPORT
+import AIRecommendations from './AIRecommendations';
 import { recordStudyProgress } from './ProductivityChart';
 import './Dashboard.css'; 
 import { Link } from 'react-router-dom';
@@ -21,7 +21,6 @@ const MOCK_TASKS = [
     { id: 4, title: 'Start Python Project', subject: 'Programming', difficulty: 'High', dueTime: 'Sep 20', isCompleted: true },
 ];
 
-// STUDY HISTORY TRACKING FUNCTION
 const saveToStudyHistory = (topic, duration, content, type = 'study_plan') => {
     const studySession = {
         id: Date.now(),
@@ -42,7 +41,7 @@ const saveToStudyHistory = (topic, duration, content, type = 'study_plan') => {
 
 function Dashboard({ logout }) {
     const [topics, setTopics] = useState([]);
-    const [tasks, setTasks] = useState([]); // Start with empty array - will be populated with combined tasks
+    const [tasks, setTasks] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [fetchError, setFetchError] = useState(null); 
     const [studyPlanError, setStudyPlanError] = useState(null);
@@ -56,28 +55,22 @@ function Dashboard({ logout }) {
     const [activeSection, setActiveSection] = useState('productivity');
     const [notificationPermission, setNotificationPermission] = useState('default');
 
-    // Enhanced topic added handler - automatically switches to study section
     const handleTopicAdded = (newTopic) => {
-        console.log('🎯 New topic added:', newTopic);
+        console.log('New topic added:', newTopic);
         setRefreshTopics(prev => !prev);
         
-        // Auto-select the new topic and switch to study section
         const topicName = newTopic.name || newTopic;
         setSelectedTopic(topicName);
         setActiveSection('study');
         
-        // Show success message with guidance
         setTimeout(() => {
-            alert(`✅ Topic "${topicName}" added! Now generate your study plan.`);
+            alert(`Topic "${topicName}" added! Now generate your study plan.`);
         }, 300);
     };
 
-    // Load tasks from both MOCK_TASKS and calendar events
     const loadAllTasks = useCallback(() => {
-        // Get calendar tasks
         const calendarTasks = JSON.parse(localStorage.getItem('calendarTasks') || '[]');
         
-        // Combine with mock tasks (filter out duplicates)
         const mockTasks = MOCK_TASKS.filter(mockTask => 
             !calendarTasks.some(calTask => calTask.title === mockTask.title)
         );
@@ -86,14 +79,11 @@ function Dashboard({ logout }) {
         setTasks(allTasks);
     }, []);
 
-    // Initialize tasks and notification permission
     useEffect(() => {
         loadAllTasks();
         
-        // Set up interval to refresh tasks (in case calendar events change)
-        const interval = setInterval(loadAllTasks, 30000); // Check every 30 seconds
+        const interval = setInterval(loadAllTasks, 30000);
         
-        // Check notification permission
         if ("Notification" in window) {
             setNotificationPermission(Notification.permission);
         }
@@ -101,33 +91,30 @@ function Dashboard({ logout }) {
         return () => clearInterval(interval);
     }, [loadAllTasks]);
 
-    // Request notification permission
     const requestNotificationPermission = () => {
         if ("Notification" in window) {
             Notification.requestPermission().then(permission => {
                 setNotificationPermission(permission);
                 if (permission === "granted") {
-                    console.log("✅ Notification permission granted");
-                    alert("🔔 Notifications enabled! You'll get reminders 30 minutes before study sessions.");
+                    console.log("Notification permission granted");
+                    alert("Notifications enabled! You'll get reminders 30 minutes before study sessions.");
                 }
             });
         }
     };
 
-    // COPY TO CLIPBOARD FUNCTION
     const handleCopyToClipboard = async () => {
         try {
             await navigator.clipboard.writeText(generatedContent);
-            setCopySuccess('✅ Copied to clipboard!');
+            setCopySuccess('Copied to clipboard!');
             setTimeout(() => setCopySuccess(''), 3000);
         } catch (err) {
             console.error('Failed to copy: ', err);
-            setCopySuccess('❌ Failed to copy');
+            setCopySuccess('Failed to copy');
             setTimeout(() => setCopySuccess(''), 3000);
         }
     };
 
-    // DOWNLOAD AS TXT FILE FUNCTION
     const handleDownloadTxt = () => {
         const element = document.createElement("a");
         const file = new Blob([generatedContent], { type: 'text/plain' });
@@ -138,11 +125,10 @@ function Dashboard({ logout }) {
         document.body.appendChild(element);
         element.click();
         document.body.removeChild(element);
-        setCopySuccess('📥 Downloaded as text file!');
+        setCopySuccess('Downloaded as text file!');
         setTimeout(() => setCopySuccess(''), 3000);
     };
 
-    // DOWNLOAD AS PDF FUNCTION
     const handleDownloadPDF = () => {
         const printWindow = window.open('', '_blank');
         const topicName = selectedTopic || 'Study Notes';
@@ -182,11 +168,10 @@ function Dashboard({ logout }) {
             printWindow.print();
         }, 500);
         
-        setCopySuccess('🖨️ Opening print dialog for PDF...');
+        setCopySuccess('Opening print dialog for PDF...');
         setTimeout(() => setCopySuccess(''), 3000);
     };
 
-    // FIXED: Improved topic fetching
     const fetchTopics = useCallback(async () => {
         try {
             let apiTopics = [];
@@ -201,7 +186,7 @@ function Dashboard({ logout }) {
                     apiTopics = response.data.results;
                 }
             } catch (apiError) {
-                console.warn('⚠️ API fetch failed, using localStorage only:', apiError);
+                console.warn('API fetch failed, using localStorage only:', apiError);
             }
             
             const storedTempTopics = localStorage.getItem('temporaryTopics');
@@ -229,11 +214,10 @@ function Dashboard({ logout }) {
     }, [selectedTopic]);
 
     useEffect(() => {
-        console.log('🔄 Fetching topics...');
+        console.log('Fetching topics...');
         fetchTopics();
     }, [fetchTopics, refreshTopics]);
 
-    // Extract subtopics from selected topic
     const getAvailableSubtopics = () => {
         if (!selectedTopic) return [];
         
@@ -271,7 +255,7 @@ function Dashboard({ logout }) {
             const specificArea = topicParts[1] || topicParts[0];
             const finalSubtopics = selectedSubtopics.length > 0 ? selectedSubtopics : [specificArea];
 
-            console.log('🚀 Generating study plan for:', { topic: selectedTopic, mainSubject, specificArea, subtopics: finalSubtopics, duration });
+            console.log('Generating study plan for:', { topic: selectedTopic, mainSubject, specificArea, subtopics: finalSubtopics, duration });
 
             const response = await api.post('/sessions/', {
                 topic_name: selectedTopic,
@@ -288,13 +272,12 @@ function Dashboard({ logout }) {
             recordStudyProgress(specificArea, 'study_plan');
             saveToStudyHistory(selectedTopic, duration, generatedContentText, 'study_plan');
             
-            // Auto-scroll to generated content
             setTimeout(() => {
                 document.querySelector('.generated-content')?.scrollIntoView({ behavior: 'smooth' });
             }, 500);
             
         } catch (err) {
-            console.error("❌ Error generating session:", err.response ? err.response.data : err);
+            console.error("Error generating session:", err.response ? err.response.data : err);
             setStudyPlanError(
                 err.response?.data?.error || 
                 "Failed to generate study plan. Please try a more specific topic."
@@ -304,7 +287,6 @@ function Dashboard({ logout }) {
         }
     };
 
-    // Enhanced task completion handler
     const handleToggleComplete = (id) => {
         setTasks(prevTasks => 
             prevTasks.map(task => 
@@ -312,12 +294,10 @@ function Dashboard({ logout }) {
             )
         );
         
-        // If it's a calendar task, also update the original event completion
         const task = tasks.find(t => t.id === id);
         if (task && task.eventId) {
-            console.log(`📅 Calendar task "${task.title}" marked as ${task.isCompleted ? 'incomplete' : 'completed'}`);
+            console.log(`Calendar task "${task.title}" marked as ${task.isCompleted ? 'incomplete' : 'completed'}`);
             
-            // You could update the calendar event status here
             const events = JSON.parse(localStorage.getItem('studyEvents') || '[]');
             const updatedEvents = events.map(event => 
                 event.id === task.eventId 
@@ -328,21 +308,18 @@ function Dashboard({ logout }) {
         }
     };
 
-    // Enhanced task details handler
     const handleViewDetails = (id) => {
         const task = tasks.find(t => t.id === id);
         if (task && task.eventId) {
-            // For calendar tasks, show event details
             const events = JSON.parse(localStorage.getItem('studyEvents') || '[]');
             const event = events.find(e => e.id === task.eventId);
             
             if (event) {
-                alert(`📅 Study Session Details:\n\n📚 Topic: ${event.topic || event.title}\n🗓️ Date: ${new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\n⏰ Time: ${event.time}\n⏱️ Duration: ${event.duration}\n🎯 Priority: ${event.priority}\n📝 Description: ${event.description || 'No description'}`);
+                alert(`Study Session Details:\n\nTopic: ${event.topic || event.title}\nDate: ${new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\nTime: ${event.time}\nDuration: ${event.duration}\nPriority: ${event.priority}\nDescription: ${event.description || 'No description'}`);
             } else {
-                alert(`📅 Study Session: ${task.title}\n📚 Subject: ${task.subject}\n⏰ Due: ${task.dueTime}`);
+                alert(`Study Session: ${task.title}\nSubject: ${task.subject}\nDue: ${task.dueTime}`);
             }
         } else {
-            // For regular tasks
             alert(`Navigating to details for Task ID: ${id}`);
         }
     };
@@ -350,7 +327,7 @@ function Dashboard({ logout }) {
     const clearOldTopics = () => {
         localStorage.removeItem('temporaryTopics');
         setRefreshTopics(prev => !prev);
-        alert('🗑️ Old topics cleared! Refreshing topics list...');
+        alert('Old topics cleared! Refreshing topics list...');
     };
 
     if (isLoading) {
@@ -371,9 +348,9 @@ function Dashboard({ logout }) {
                 <h3 className="sidebar-header">Zonlus</h3>
                 
                 <div className="sidebar-nav-links">
-                    <Link to="/dashboard" className="nav-link active">🏠 Dashboard</Link>
-                    <Link to="/courses" className="nav-link">📚 My Courses</Link>
-                    <Link to="/admin" className="nav-link">👑 Admin Tools</Link>
+                    <Link to="/dashboard" className="nav-link active">Dashboard</Link>
+                    <Link to="/courses" className="nav-link">My Courses</Link>
+                    <Link to="/admin" className="nav-link">Admin Tools</Link>
                 </div>
 
                 <button 
@@ -386,42 +363,38 @@ function Dashboard({ logout }) {
             </aside>
 
             <div className="main-content">
-                {/* 🎯 DASHBOARD NAVIGATION TABS */}
                 <div className="dashboard-tabs">
                     <button 
                         className={`tab-button ${activeSection === 'productivity' ? 'active' : ''}`}
                         onClick={() => setActiveSection('productivity')}
                     >
-                        📊 Productivity Overview
+                        Productivity Overview
                     </button>
                     <button 
                         className={`tab-button ${activeSection === 'study' ? 'active' : ''}`}
                         onClick={() => setActiveSection('study')}
                     >
-                        🎯 Study Session
+                        Study Session
                     </button>
                     <button 
                         className={`tab-button ${activeSection === 'tools' ? 'active' : ''}`}
                         onClick={() => setActiveSection('tools')}
                     >
-                        🛠️ Study Tools
+                        Study Tools
                     </button>
                 </div>
 
-                {/* Notification Permission Banner */}
                 {notificationPermission !== 'granted' && (
                     <div className="notification-permission-banner">
-                        🔔 Enable notifications to get reminders 30 minutes before study sessions
+                        Enable notifications to get reminders 30 minutes before study sessions
                         <button onClick={requestNotificationPermission}>
                             Enable Notifications
                         </button>
                     </div>
                 )}
 
-                {/* 📊 PRODUCTIVITY OVERVIEW SECTION (DEFAULT VIEW) */}
                 {activeSection === 'productivity' && (
                     <div className="section-content">
-                        {/* AI RECOMMENDATIONS - FIRST THING USERS SEE */}
                         <div className="dashboard-card">
                             <AIRecommendations />
                         </div>
@@ -432,7 +405,7 @@ function Dashboard({ logout }) {
                         
                         <div className="urgent-tasks dashboard-card">
                             <div className="tasks-header">
-                                <h3>📋 Urgent Tasks ({incompleteTasksCount})</h3>
+                                <h3>Urgent Tasks ({incompleteTasksCount})</h3>
                                 <small>Includes calendar study sessions + regular tasks</small>
                             </div>
                             <div className="task-cards-container">
@@ -447,12 +420,12 @@ function Dashboard({ logout }) {
                                     ))
                                 ) : (
                                     <div className="no-tasks">
-                                        <p>🎉 No urgent tasks! Add study sessions to your calendar or create new tasks.</p>
+                                        <p>No urgent tasks! Add study sessions to your calendar or create new tasks.</p>
                                         <button 
                                             onClick={() => setActiveSection('study')}
                                             className="add-tasks-btn"
                                         >
-                                            📅 Plan Study Session
+                                            Plan Study Session
                                         </button>
                                     </div>
                                 )}
@@ -469,24 +442,21 @@ function Dashboard({ logout }) {
                     </div>
                 )}
 
-                {/* 🎯 STUDY SESSION SECTION */}
                 {activeSection === 'study' && (
                     <div className="section-content">
-                        {/* QUICK TOPIC ADDITION */}
                         <div className="dashboard-card">
                             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px'}}>
-                                <h3>🎯 Step 1: Add Learning Topic</h3>
+                                <h3>Step 1: Add Learning Topic</h3>
                                 <button onClick={clearOldTopics} className="clear-topics-btn">
-                                    🗑️ Clear Old Topics
+                                    Clear Old Topics
                                 </button>
                             </div>
                             <TopicManager onTopicAdded={handleTopicAdded} />
                         </div>
 
-                        {/* STUDY SESSION GENERATOR */}
                         <div className="dashboard-card">
                             <div className="session-header">
-                                <h2>🚀 Step 2: Start Your Study Session</h2>
+                                <h2>Step 2: Start Your Study Session</h2>
                                 <p className="session-instruction">Select your topic and generate a personalized study plan</p>
                             </div>
                             
@@ -514,7 +484,7 @@ function Dashboard({ logout }) {
 
                                 <div className="form-group">
                                     <label>
-                                        📚 Selected Topic:
+                                        Selected Topic:
                                         <select
                                             value={selectedTopic}
                                             onChange={(e) => {
@@ -535,10 +505,9 @@ function Dashboard({ logout }) {
                                     <small>Current topic: <strong>{selectedTopic || 'None selected'}</strong></small>
                                 </div>
 
-                                {/* SUBTOPIC SELECTION */}
                                 {availableSubtopics.length > 0 && (
                                     <div className="form-group">
-                                        <label>🎯 Select Specific Areas (Optional):</label>
+                                        <label>Select Specific Areas (Optional):</label>
                                         <div className="subtopics-container">
                                             {availableSubtopics.map((subtopic, index) => (
                                                 <label key={index} className="subtopic-checkbox">
@@ -557,7 +526,7 @@ function Dashboard({ logout }) {
 
                                 <div className="form-group">
                                     <label>
-                                        ⏰ Study Duration:
+                                        Study Duration:
                                         <input
                                             type="text"
                                             value={duration}
@@ -570,23 +539,23 @@ function Dashboard({ logout }) {
                                 </div>
 
                                 <button type="submit" disabled={isGenerating} className="generate-plan-btn">
-                                    {isGenerating ? '🔄 Generating...' : '🚀 Generate AI Study Plan'}
+                                    {isGenerating ? 'Generating...' : 'Generate AI Study Plan'}
                                 </button>
                             </form>
 
                             {generatedContent && (
                                 <div className="generated-content">
                                     <div className="content-header">
-                                        <h3>✅ Your Personalized Study Plan:</h3>
+                                        <h3>Your Personalized Study Plan:</h3>
                                         <div className="content-actions">
                                             <button onClick={handleCopyToClipboard} className="action-btn copy-btn">
-                                                📋 Copy
+                                                Copy
                                             </button>
                                             <button onClick={handleDownloadTxt} className="action-btn download-btn">
-                                                📥 Download TXT
+                                                Download TXT
                                             </button>
                                             <button onClick={handleDownloadPDF} className="action-btn pdf-btn">
-                                                📄 Save as PDF
+                                                Save as PDF
                                             </button>
                                         </div>
                                     </div>
@@ -606,22 +575,18 @@ function Dashboard({ logout }) {
                     </div>
                 )}
 
-                {/* 🛠️ STUDY TOOLS SECTION */}
                 {activeSection === 'tools' && (
                     <div className="section-content">
-                        {/* AI TUTOR - ALWAYS AVAILABLE FOR HELP */}
                         <div className="dashboard-card">
                             <AITutor />
                         </div>
 
-                        {/* DOCUMENT UPLOAD */}
                         <div className="dashboard-card">
                             <DocumentUpload onSummaryGenerated={(data) => {
                                 console.log('Summary generated:', data);
                             }} />
                         </div>
 
-                        {/* STUDY TOOLS */}
                         <div className="ai-study-tools dashboard-card">
                             <StudyTools topics={topics} selectedSubtopics={selectedSubtopics} />
                         </div>

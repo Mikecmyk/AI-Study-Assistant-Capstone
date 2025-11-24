@@ -3,10 +3,9 @@ import React, { useState, useEffect } from 'react';
 
 const StudyHistory = () => {
     const [studySessions, setStudySessions] = useState([]);
-    const [filter, setFilter] = useState('all'); // 'all', 'today', 'week', 'month'
+    const [filter, setFilter] = useState('all');
     const [loading, setLoading] = useState(false);
 
-    // Load study history from localStorage
     useEffect(() => {
         loadStudyHistory();
     }, []);
@@ -17,7 +16,6 @@ const StudyHistory = () => {
             const storedHistory = localStorage.getItem('studyHistory');
             const history = storedHistory ? JSON.parse(storedHistory) : [];
             
-            // Sort by timestamp (newest first)
             const sortedHistory = history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
             setStudySessions(sortedHistory);
         } catch (error) {
@@ -28,7 +26,6 @@ const StudyHistory = () => {
         }
     };
 
-    // Filter sessions based on time period
     const getFilteredSessions = () => {
         const now = new Date();
         
@@ -50,7 +47,6 @@ const StudyHistory = () => {
         });
     };
 
-    // Clear all history
     const clearHistory = () => {
         if (window.confirm('Are you sure you want to clear all study history?')) {
             localStorage.removeItem('studyHistory');
@@ -58,22 +54,10 @@ const StudyHistory = () => {
         }
     };
 
-    // Refresh history
     const refreshHistory = () => {
         loadStudyHistory();
     };
 
-    // Get session type icon
-    const getSessionIcon = (type) => {
-        const icons = {
-            'study_plan': '📚',
-            'notes': '📝',
-            'quiz': '🎯'
-        };
-        return icons[type] || '📖';
-    };
-
-    // Get session type display name
     const getSessionType = (type) => {
         const types = {
             'study_plan': 'Study Plan',
@@ -83,7 +67,6 @@ const StudyHistory = () => {
         return types[type] || 'Study Session';
     };
 
-    // Format duration for display
     const formatDuration = (duration) => {
         if (!duration) return 'Not specified';
         return duration;
@@ -94,7 +77,7 @@ const StudyHistory = () => {
     return (
         <div className="study-history">
             <div className="history-header">
-                <h3>📊 Study History</h3>
+                <h3>Study History</h3>
                 <div className="history-controls">
                     <select 
                         value={filter} 
@@ -112,7 +95,7 @@ const StudyHistory = () => {
                         className="refresh-history-btn"
                         title="Refresh history"
                     >
-                        🔄
+                        Refresh
                     </button>
                     
                     {studySessions.length > 0 && (
@@ -121,7 +104,7 @@ const StudyHistory = () => {
                             className="clear-history-btn"
                             title="Clear all history"
                         >
-                            🗑️ Clear
+                            Clear
                         </button>
                     )}
                 </div>
@@ -131,7 +114,6 @@ const StudyHistory = () => {
                 <div className="loading">Loading your study history...</div>
             ) : studySessions.length === 0 ? (
                 <div className="empty-history">
-                    <div className="empty-icon">📚</div>
                     <p>No study sessions yet</p>
                     <small>Your study plans, notes, and quizzes will appear here</small>
                 </div>
@@ -161,9 +143,6 @@ const StudyHistory = () => {
                             <div key={session.id} className="session-card">
                                 <div className="session-header">
                                     <div className="session-type">
-                                        <span className="session-icon">
-                                            {getSessionIcon(session.type)}
-                                        </span>
                                         <span className="session-type-text">
                                             {getSessionType(session.type)}
                                         </span>

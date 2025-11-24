@@ -146,13 +146,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
-# Tell Django about your static files directory
-STATICFILES_DIRS = [BASE_DIR / "static"]  # if you have a static folder
+# FIXED: STATIC_ROOT should always be set (this is where collectstatic puts files)
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# FIXED: Only use STATICFILES_DIRS if the static directory actually exists
+# Remove or comment out the line below since the static directory doesn't exist
+# STATICFILES_DIRS = [BASE_DIR / "static"]  # Commented out - directory doesn't exist
 
 if not DEBUG:
-    # Absolute path to the directory where collectstatic will gather static files
-    STATIC_ROOT = BASE_DIR / 'staticfiles'
-    
     # Configure WhiteNoise storage backend with compression and versioning
     STORAGES = {
         "staticfiles": {
@@ -168,7 +169,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = False # Good practice: explicitly list allowed origins
 
 # Get the production front-end URL from environment variables
-# Fallback to local for development
+# Fallback to local for development - UPDATED WITH PLACEHOLDER
 FRONTEND_URL = config('FRONTEND_URL', default=os.environ.get('FRONTEND_URL', 'http://localhost:3000'))
 
 CORS_ALLOWED_ORIGINS = [
@@ -177,6 +178,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173", # Vite dev server
     "http://127.0.0.1:5173",
     FRONTEND_URL,           # Production Render URL
+    "https://ai-study-assistant-frontend.onrender.com",  # Add this explicitly
 ]
 
 # Add the FRONTEND_URL to CSRF trusted origins if it exists
@@ -186,6 +188,7 @@ csrf_trusted_origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     'https://*.onrender.com',
+    "https://ai-study-assistant-frontend.onrender.com",  # Add this explicitly
 ]
 
 if FRONTEND_URL:

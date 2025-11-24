@@ -2,7 +2,6 @@
 import React from 'react';
 
 function AdminAnalytics() {
-    // Mock data - in real app, fetch from API
     const analyticsData = {
         totalSessions: 1247,
         activeLearners: 89,
@@ -16,42 +15,36 @@ function AdminAnalytics() {
     return (
         <div style={containerStyle}>
             <header style={headerStyle}>
-                <h2 style={titleStyle}>📊 Learning Analytics Dashboard</h2>
+                <h2 style={titleStyle}>Learning Analytics Dashboard</h2>
                 <p style={subtitleStyle}>Monitor learning progress and platform engagement</p>
             </header>
 
-            {/* Key Metrics */}
             <div style={metricsGridStyle}>
                 <div style={metricCardStyle}>
-                    <div style={metricIconStyle}>📚</div>
                     <h3>Total Study Sessions</h3>
                     <p style={metricValueStyle}>{analyticsData.totalSessions}</p>
-                    <p style={metricTrendStyle}>↑ 12% this month</p>
+                    <p style={metricTrendStyle}>12% this month</p>
                 </div>
                 
                 <div style={metricCardStyle}>
-                    <div style={metricIconStyle}>👥</div>
                     <h3>Active Learners</h3>
                     <p style={metricValueStyle}>{analyticsData.activeLearners}</p>
-                    <p style={metricTrendStyle}>↑ 8% this week</p>
+                    <p style={metricTrendStyle}>8% this week</p>
                 </div>
                 
                 <div style={metricCardStyle}>
-                    <div style={metricIconStyle}>⭐</div>
                     <h3>Most Popular Topic</h3>
                     <p style={metricValueStyle}>{analyticsData.popularTopic}</p>
                     <p style={metricTrendStyle}>Mathematics</p>
                 </div>
                 
                 <div style={metricCardStyle}>
-                    <div style={metricIconStyle}>⏱️</div>
                     <h3>Avg Study Duration</h3>
                     <p style={metricValueStyle}>{analyticsData.avgStudyDuration}</p>
                     <p style={metricTrendStyle}>Consistent engagement</p>
                 </div>
             </div>
 
-            {/* Additional Stats */}
             <div style={statsGridStyle}>
                 <div style={statCardStyle}>
                     <h4>Completion Rate</h4>
@@ -74,22 +67,18 @@ function AdminAnalytics() {
                 </div>
             </div>
 
-            {/* Recent Activity */}
             <div style={activitySectionStyle}>
                 <h3>Recent Activity</h3>
                 <div style={activityListStyle}>
                     <div style={activityItemStyle}>
-                        <span style={activityIconStyle}>🎯</span>
                         <span>User "JohnDoe" completed "Physics: Quantum Mechanics"</span>
                         <span style={activityTimeStyle}>2 hours ago</span>
                     </div>
                     <div style={activityItemStyle}>
-                        <span style={activityIconStyle}>📝</span>
                         <span>New topic "Computer Science: Machine Learning" was added</span>
                         <span style={activityTimeStyle}>5 hours ago</span>
                     </div>
                     <div style={activityItemStyle}>
-                        <span style={activityIconStyle}>👑</span>
                         <span>User "JaneSmith" was promoted to Admin</span>
                         <span style={activityTimeStyle}>1 day ago</span>
                     </div>
@@ -99,7 +88,6 @@ function AdminAnalytics() {
     );
 }
 
-// Enhanced Styles for Analytics
 const containerStyle = {
     padding: '30px',
     backgroundColor: 'white',
@@ -139,11 +127,6 @@ const metricCardStyle = {
     textAlign: 'center',
     border: '1px solid #e1e8ed',
     transition: 'transform 0.3s, box-shadow 0.3s'
-};
-
-const metricIconStyle = {
-    fontSize: '2.5em',
-    marginBottom: '15px'
 };
 
 const metricValueStyle = {
@@ -218,11 +201,6 @@ const activityItemStyle = {
     borderRadius: '8px',
     marginBottom: '10px',
     backgroundColor: '#f8f9fa'
-};
-
-const activityIconStyle = {
-    fontSize: '1.2em',
-    marginRight: '15px'
 };
 
 const activityTimeStyle = {

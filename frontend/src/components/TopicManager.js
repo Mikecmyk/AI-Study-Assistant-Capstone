@@ -64,18 +64,15 @@ function TopicManager({ onTopicAdded }) {
     const [error, setError] = useState('');
 
     const saveTopicToStorage = (topicObject) => {
-        // Get existing topics from localStorage
         const storedTopics = localStorage.getItem('temporaryTopics');
         const existingTopics = storedTopics ? JSON.parse(storedTopics) : [];
         
-        // Add new topic
         const updatedTopics = [...existingTopics, topicObject];
         
-        // Save back to localStorage
         localStorage.setItem('temporaryTopics', JSON.stringify(updatedTopics));
         
-        console.log('💾 Saved topic to localStorage:', topicObject);
-        console.log('📚 All stored topics:', updatedTopics);
+        console.log('Saved topic to localStorage:', topicObject);
+        console.log('All stored topics:', updatedTopics);
     };
 
     const handleAddTopic = () => {
@@ -83,27 +80,24 @@ function TopicManager({ onTopicAdded }) {
         
         if (selectedSubject && specificTopic) {
             const fullTopic = `${selectedSubject}: ${specificTopic}`;
-            // Create a proper topic object with subtopics
             const topicObject = {
-                id: Date.now(), // Generate unique ID
+                id: Date.now(),
                 name: fullTopic,
                 subject: selectedSubject,
                 specificArea: specificTopic,
-                subtopics: [specificTopic], // Store the specific area as a subtopic
+                subtopics: [specificTopic],
                 isCustom: true
             };
             
-            // Save to localStorage
             saveTopicToStorage(topicObject);
             
-            // Notify parent component
             onTopicAdded(topicObject);
             
             setSelectedSubject('');
             setSpecificTopic('');
             setCustomTopic('');
             
-            alert(`✅ Topic "${fullTopic}" added successfully!`);
+            alert(`Topic "${fullTopic}" added successfully!`);
             
         } else if (customTopic.trim()) {
             if (customTopic.length < 3) {
@@ -111,7 +105,6 @@ function TopicManager({ onTopicAdded }) {
                 return;
             }
             
-            // For custom topics, try to detect if it's in subject: topic format
             let topicName = customTopic.trim();
             let subject = 'Custom';
             let specificArea = customTopic.trim();
@@ -134,17 +127,15 @@ function TopicManager({ onTopicAdded }) {
                 isCustom: true
             };
             
-            // Save to localStorage
             saveTopicToStorage(topicObject);
             
-            // Notify parent component
             onTopicAdded(topicObject);
             
             setCustomTopic('');
             setSelectedSubject('');
             setSpecificTopic('');
             
-            alert(`✅ Topic "${topicName}" added successfully!`);
+            alert(`Topic "${topicName}" added successfully!`);
         } else {
             setError("Please select a topic or enter a custom one");
         }
@@ -161,17 +152,15 @@ function TopicManager({ onTopicAdded }) {
             isCustom: true
         };
         
-        // Save to localStorage
         saveTopicToStorage(topicObject);
         
-        // Notify parent component
         onTopicAdded(topicObject);
         
         setSelectedSubject('');
         setSpecificTopic('');
         setCustomTopic('');
         
-        alert(`✅ Topic "${fullTopic}" added successfully!`);
+        alert(`Topic "${fullTopic}" added successfully!`);
     };
 
     return (
@@ -179,7 +168,6 @@ function TopicManager({ onTopicAdded }) {
             <h3>Add Learning Topic</h3>
             <p className="topic-instruction">Choose a specific topic for better learning results</p>
             
-            {/* Subject Selection */}
             <div className="form-group">
                 <label>Select Subject:</label>
                 <select 
@@ -198,7 +186,6 @@ function TopicManager({ onTopicAdded }) {
                 </select>
             </div>
 
-            {/* Specific Topic Selection */}
             {selectedSubject && (
                 <div className="form-group">
                     <label>Select Specific Topic:</label>
@@ -218,7 +205,6 @@ function TopicManager({ onTopicAdded }) {
                 </div>
             )}
 
-            {/* Custom Topic Input */}
             <div className="form-group">
                 <label>Or Enter Custom Topic:</label>
                 <input
@@ -242,7 +228,6 @@ function TopicManager({ onTopicAdded }) {
                 Add Learning Topic
             </button>
             
-            {/* Quick Add Suggestions */}
             <div className="topic-suggestions">
                 <h4>Quick Add Popular Topics:</h4>
                 <div className="quick-topics-grid">
@@ -266,9 +251,9 @@ function TopicManager({ onTopicAdded }) {
             </div>
 
             <div className="topic-tips">
-                <h4>💡 Tips for Better Learning:</h4>
+                <h4>Tips for Better Learning:</h4>
                 <ul>
-                    <li>Choose <strong>specific topics</strong> rather than broad subjects</li>
+                    <li>Choose specific topics rather than broad subjects</li>
                     <li>Break complex subjects into smaller, manageable topics</li>
                     <li>Focus on one concept at a time for deeper understanding</li>
                 </ul>

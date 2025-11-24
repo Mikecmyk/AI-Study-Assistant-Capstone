@@ -8,14 +8,12 @@ function AdminUserList() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // --- Data Fetching (Read Operation) ---
     const fetchUsers = async () => {
         try {
             const response = await api.get('/admin/users/'); 
             setUsers(response.data);
         } catch (err) {
             console.error('Error fetching admin users:', err);
-            // This endpoint requires IsAdminUser permission
             setError('Failed to load users. Check Admin permissions.');
         } finally {
             setLoading(false);
@@ -26,7 +24,6 @@ function AdminUserList() {
         fetchUsers();
     }, []);
 
-    // --- Status Update Operation (Patch) ---
     const handleStatusUpdate = async (userId, fieldName, currentValue) => {
         const newValue = !currentValue;
         const payload = { [fieldName]: newValue };
@@ -34,7 +31,6 @@ function AdminUserList() {
         try {
             await api.patch(`/admin/users/${userId}/`, payload);
             
-            // Update the local state to reflect the change immediately
             setUsers(users.map(user => 
                 user.id === userId ? { ...user, [fieldName]: newValue } : user
             ));
@@ -50,10 +46,9 @@ function AdminUserList() {
     return (
         <div className="admin-user-list-container" style={userListContainerStyle}>
             <header style={headerStyle}>
-                <h2>👥 User Management</h2>
+                <h2>User Management</h2>
             </header>
 
-            {/* --- User Data Table --- */}
             <div className="user-table-wrapper" style={tableWrapperStyle}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
@@ -73,13 +68,12 @@ function AdminUserList() {
                                 <td style={tableCellStyle}>{user.email}</td>
                                 <td style={tableCellStyle}>{new Date(user.date_joined).toLocaleDateString()}</td>
                                 <td style={tableCellStyle}>
-                                    {user.is_active ? '✅' : '🚫'}
+                                    {user.is_active ? 'Yes' : 'No'}
                                 </td>
                                 <td style={tableCellStyle}>
-                                    {user.is_staff ? '👑' : '👤'}
+                                    {user.is_staff ? 'Yes' : 'No'}
                                 </td>
                                 <td style={tableCellStyle}>
-                                    {/* Toggle Active Button */}
                                     <button 
                                         onClick={() => handleStatusUpdate(user.id, 'is_active', user.is_active)}
                                         style={actionButtonStyle(user.is_active ? 'deactivate' : 'activate')}
@@ -87,7 +81,6 @@ function AdminUserList() {
                                         {user.is_active ? 'Deactivate' : 'Activate'}
                                     </button>
                                     
-                                    {/* Toggle Staff Button */}
                                     <button 
                                         onClick={() => handleStatusUpdate(user.id, 'is_staff', user.is_staff)}
                                         style={actionButtonStyle('role')}
@@ -104,7 +97,6 @@ function AdminUserList() {
     );
 }
 
-// Basic Inline Styles
 const userListContainerStyle = { padding: '20px' };
 const headerStyle = { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' };
 const tableWrapperStyle = { boxShadow: '0 4px 6px rgba(0,0,0,0.1)', borderRadius: '8px', overflow: 'hidden' };
@@ -113,15 +105,15 @@ const tableCellStyle = { padding: '15px', textAlign: 'left' };
 const actionButtonStyle = (type) => {
     let bgColor, color, borderColor;
     if (type === 'deactivate') {
-        bgColor = '#ffcdd2'; // Light Red
+        bgColor = '#ffcdd2';
         color = '#b71c1c';
         borderColor = '#ef9a9a';
     } else if (type === 'activate') {
-        bgColor = '#c8e6c9'; // Light Green
+        bgColor = '#c8e6c9';
         color = '#1b5e20';
         borderColor = '#a5d6a7';
     } else if (type === 'role') {
-        bgColor = '#e0f7fa'; // Light Blue
+        bgColor = '#e0f7fa';
         color = '#006064';
         borderColor = '#b2ebf2';
     }

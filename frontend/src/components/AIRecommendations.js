@@ -7,9 +7,8 @@ const AIRecommendations = () => {
     const [recommendations, setRecommendations] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
-    const [activeTab, setActiveTab] = useState('suggestions'); // 'suggestions', 'gaps', 'next'
+    const [activeTab, setActiveTab] = useState('suggestions');
 
-    // Load study history and generate recommendations
     useEffect(() => {
         generateRecommendations();
     }, []);
@@ -19,10 +18,8 @@ const AIRecommendations = () => {
         setError('');
 
         try {
-            // Get study history from localStorage
             const studyHistory = JSON.parse(localStorage.getItem('studyHistory') || '[]');
             
-            // Get recent topics (last 7 days)
             const oneWeekAgo = new Date();
             oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
             
@@ -30,10 +27,8 @@ const AIRecommendations = () => {
                 new Date(session.timestamp) > oneWeekAgo
             );
 
-            // Analyze study patterns
             const analysis = analyzeStudyPatterns(recentSessions, studyHistory);
 
-            // Generate AI-powered recommendations
             const aiRecommendations = await getAIRecommendations(analysis);
             
             setRecommendations(aiRecommendations);
@@ -47,7 +42,6 @@ const AIRecommendations = () => {
     };
 
     const analyzeStudyPatterns = (recentSessions, allSessions) => {
-        // Count sessions by subject
         const subjectCount = {};
         const subjectTime = {};
         
@@ -57,13 +51,11 @@ const AIRecommendations = () => {
             subjectTime[subject] = (subjectTime[subject] || 0) + (parseInt(session.duration) || 60);
         });
 
-        // Find most studied subjects
         const topSubjects = Object.entries(subjectCount)
             .sort(([,a], [,b]) => b - a)
             .slice(0, 3)
             .map(([subject]) => subject);
 
-        // Find potential gaps (subjects with few sessions)
         const allSubjects = [...new Set(allSessions.map(s => extractSubject(s.topic)))];
         const gapSubjects = allSubjects.filter(subject => 
             !topSubjects.includes(subject) && 
@@ -177,19 +169,17 @@ const AIRecommendations = () => {
     };
 
     const handleApplyRecommendation = (rec) => {
-        alert(`🎯 Applying: ${rec.title}\n\n${rec.description}\n\nThis will help you: ${rec.reason}`);
-        // You could auto-navigate to study session with this topic
+        alert(`Applying: ${rec.title}\n\n${rec.description}\n\nThis will help you: ${rec.reason}`);
     };
 
     const handleScheduleStudy = (rec) => {
-        alert(`📅 Let's schedule study time for: ${rec.title}\n\nSwitch to Calendar tab to plan this session.`);
-        // You could auto-open calendar with prefilled data
+        alert(`Let's schedule study time for: ${rec.title}\n\nSwitch to Calendar tab to plan this session.`);
     };
 
     if (isLoading) {
         return (
             <div className="ai-recommendations">
-                <h3>🤖 AI Study Recommendations</h3>
+                <h3>AI Study Recommendations</h3>
                 <div className="loading-recommendations">
                     <div className="loading-spinner"></div>
                     <p>Analyzing your learning patterns...</p>
@@ -201,49 +191,47 @@ const AIRecommendations = () => {
     return (
         <div className="ai-recommendations">
             <div className="recommendations-header">
-                <h3>🤖 AI Study Recommendations</h3>
+                <h3>AI Study Recommendations</h3>
                 <button 
                     onClick={generateRecommendations}
                     className="refresh-recommendations-btn"
                     title="Refresh recommendations"
                 >
-                    🔄
+                    Refresh
                 </button>
             </div>
 
             {error && (
                 <div className="recommendation-error">
-                    ⚠️ {error}
+                    {error}
                 </div>
             )}
 
-            {/* Recommendation Tabs */}
             <div className="recommendation-tabs">
                 <button 
                     className={`tab ${activeTab === 'suggestions' ? 'active' : ''}`}
                     onClick={() => setActiveTab('suggestions')}
                 >
-                    💡 Suggestions ({recommendations.suggestions?.length || 0})
+                    Suggestions ({recommendations.suggestions?.length || 0})
                 </button>
                 <button 
                     className={`tab ${activeTab === 'gaps' ? 'active' : ''}`}
                     onClick={() => setActiveTab('gaps')}
                 >
-                    🔍 Knowledge Gaps ({recommendations.gaps?.length || 0})
+                    Knowledge Gaps ({recommendations.gaps?.length || 0})
                 </button>
                 <button 
                     className={`tab ${activeTab === 'next' ? 'active' : ''}`}
                     onClick={() => setActiveTab('next')}
                 >
-                    🚀 Next Steps ({recommendations.nextSteps?.length || 0})
+                    Next Steps ({recommendations.nextSteps?.length || 0})
                 </button>
             </div>
 
-            {/* Recommendations Content */}
             <div className="recommendations-content">
                 {activeTab === 'suggestions' && (
                     <div className="recommendation-list">
-                        <h4>💡 Personalized Study Suggestions</h4>
+                        <h4>Personalized Study Suggestions</h4>
                         <p className="section-description">Based on your recent learning activity and patterns</p>
                         
                         {recommendations.suggestions?.map((rec, index) => (
@@ -255,7 +243,7 @@ const AIRecommendations = () => {
                                     </span>
                                 </div>
                                 <p className="rec-description">{rec.description}</p>
-                                <div className="rec-reason">🎯 {rec.reason}</div>
+                                <div className="rec-reason">{rec.reason}</div>
                                 <div className="rec-actions">
                                     <button 
                                         onClick={() => handleApplyRecommendation(rec)}
@@ -277,7 +265,7 @@ const AIRecommendations = () => {
 
                 {activeTab === 'gaps' && (
                     <div className="recommendation-list">
-                        <h4>🔍 Knowledge Gap Analysis</h4>
+                        <h4>Knowledge Gap Analysis</h4>
                         <p className="section-description">Areas that need reinforcement based on your learning patterns</p>
                         
                         {recommendations.gaps?.map((rec, index) => (
@@ -289,7 +277,7 @@ const AIRecommendations = () => {
                                     </span>
                                 </div>
                                 <p className="rec-description">{rec.description}</p>
-                                <div className="rec-reason">🎯 {rec.reason}</div>
+                                <div className="rec-reason">{rec.reason}</div>
                                 <div className="rec-actions">
                                     <button 
                                         onClick={() => handleApplyRecommendation(rec)}
@@ -305,7 +293,7 @@ const AIRecommendations = () => {
 
                 {activeTab === 'next' && (
                     <div className="recommendation-list">
-                        <h4>🚀 Next Learning Steps</h4>
+                        <h4>Next Learning Steps</h4>
                         <p className="section-description">Smart progression paths to advance your knowledge</p>
                         
                         {recommendations.nextSteps?.map((rec, index) => (
@@ -317,7 +305,7 @@ const AIRecommendations = () => {
                                     </span>
                                 </div>
                                 <p className="rec-description">{rec.description}</p>
-                                <div className="rec-reason">🎯 {rec.reason}</div>
+                                <div className="rec-reason">{rec.reason}</div>
                                 <div className="rec-actions">
                                     <button 
                                         onClick={() => handleApplyRecommendation(rec)}
@@ -338,7 +326,6 @@ const AIRecommendations = () => {
                 )}
             </div>
 
-            {/* Recommendation Stats */}
             <div className="recommendation-stats">
                 <div className="stat">
                     <span className="stat-number">{recommendations.suggestions?.length || 0}</span>

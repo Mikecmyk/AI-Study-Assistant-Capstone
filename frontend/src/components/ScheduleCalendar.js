@@ -5,7 +5,6 @@ import './Dashboard.css';
 const ScheduleCalendar = () => {
     const [events, setEvents] = useState([]);
     const [showEventForm, setShowEventForm] = useState(false);
-    const [selectedDate, setSelectedDate] = useState(null);
     const [newEvent, setNewEvent] = useState({
         title: '',
         topic: '',
@@ -16,7 +15,6 @@ const ScheduleCalendar = () => {
         priority: 'medium'
     });
 
-    // Load events from localStorage on component mount
     useEffect(() => {
         const savedEvents = localStorage.getItem('studyEvents');
         if (savedEvents) {
@@ -24,15 +22,11 @@ const ScheduleCalendar = () => {
         }
     }, []);
 
-    // Save events to localStorage whenever events change
     useEffect(() => {
         localStorage.setItem('studyEvents', JSON.stringify(events));
-        
-        // Sync events to urgent tasks
         syncEventsToTasks();
     }, [events]);
 
-    // Sync calendar events to urgent tasks
     const syncEventsToTasks = () => {
         const today = new Date().toISOString().split('T')[0];
         const upcomingEvents = events.filter(event => event.date >= today);
@@ -48,10 +42,7 @@ const ScheduleCalendar = () => {
             type: 'calendar_event'
         }));
 
-        // Save to localStorage for urgent tasks
         localStorage.setItem('calendarTasks', JSON.stringify(tasks));
-        
-        // Set up reminders
         setupReminders(upcomingEvents);
     };
 
@@ -80,7 +71,6 @@ const ScheduleCalendar = () => {
     };
 
     const setupReminders = (upcomingEvents) => {
-        // Clear existing reminders
         const existingReminders = JSON.parse(localStorage.getItem('activeReminders') || '[]');
         existingReminders.forEach(reminderId => {
             clearTimeout(reminderId);
@@ -90,7 +80,7 @@ const ScheduleCalendar = () => {
         
         upcomingEvents.forEach(event => {
             const eventDateTime = new Date(`${event.date}T${event.time}`);
-            const reminderTime = new Date(eventDateTime.getTime() - 30 * 60 * 1000); // 30 minutes before
+            const reminderTime = new Date(eventDateTime.getTime() - 30 * 60 * 1000);
             
             const now = new Date();
             const timeUntilReminder = reminderTime.getTime() - now.getTime();
@@ -109,15 +99,14 @@ const ScheduleCalendar = () => {
 
     const showNotification = (event) => {
         if ("Notification" in window && Notification.permission === "granted") {
-            new Notification("📚 Zonlus Study Reminder", {
+            new Notification("Zonlus Study Reminder", {
                 body: `Time to study: ${event.topic || event.title}\nStarts in 30 minutes!`,
                 icon: "/favicon.ico",
                 tag: `study-reminder-${event.id}`
             });
         }
         
-        // Fallback alert if notifications are blocked
-        alert(`🔔 Study Reminder!\n\n"${event.topic || event.title}"\nStarts in 30 minutes!`);
+        alert(`Study Reminder!\n\n"${event.topic || event.title}"\nStarts in 30 minutes!`);
     };
 
     const requestNotificationPermission = () => {
@@ -130,13 +119,11 @@ const ScheduleCalendar = () => {
         }
     };
 
-    // Initialize notification permission on component mount
     useEffect(() => {
         requestNotificationPermission();
     }, []);
 
     const handleDateClick = (date) => {
-        setSelectedDate(date);
         setNewEvent({
             title: '',
             topic: '',
@@ -170,7 +157,7 @@ const ScheduleCalendar = () => {
             priority: 'medium'
         });
         
-        alert('✅ Study session added to calendar! It will appear in your urgent tasks.');
+        alert('Study session added to calendar! It will appear in your urgent tasks.');
     };
 
     const handleDeleteEvent = (eventId) => {
@@ -183,7 +170,6 @@ const ScheduleCalendar = () => {
         return events.filter(event => event.date === date);
     };
 
-    // Generate calendar days for current month
     const generateCalendarDays = () => {
         const today = new Date();
         const year = today.getFullYear();
@@ -195,12 +181,10 @@ const ScheduleCalendar = () => {
         
         const days = [];
         
-        // Add empty cells for days before the first day of month
         for (let i = 0; i < firstDay.getDay(); i++) {
             days.push(null);
         }
         
-        // Add days of the month
         for (let i = 1; i <= daysInMonth; i++) {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
             days.push({
@@ -219,12 +203,12 @@ const ScheduleCalendar = () => {
     return (
         <div className="schedule-calendar-container">
             <div className="calendar-header">
-                <h4>📅 Study Calendar</h4>
+                <h4>Study Calendar</h4>
                 <button 
                     onClick={() => setShowEventForm(true)}
                     className="add-event-button"
                 >
-                    + Add Study Session
+                    Add Study Session
                 </button>
             </div>
 
@@ -252,7 +236,7 @@ const ScheduleCalendar = () => {
             </div>
 
             <div className="upcoming-events-list">
-                <h4>📋 Upcoming Study Sessions</h4>
+                <h4>Upcoming Study Sessions</h4>
                 <div className="events-scroll-container">
                     {events.filter(event => event.date >= new Date().toISOString().split('T')[0])
                           .sort((a, b) => new Date(a.date + 'T' + a.time) - new Date(b.date + 'T' + b.time))
@@ -276,7 +260,7 @@ const ScheduleCalendar = () => {
                                     className="delete-btn"
                                     title="Delete event"
                                 >
-                                    🗑️
+                                    Delete
                                 </button>
                             </div>
                         </div>
@@ -289,11 +273,10 @@ const ScheduleCalendar = () => {
                 </div>
             </div>
 
-            {/* Event Form Modal */}
             {showEventForm && (
                 <div className="event-form-overlay">
                     <div className="event-form">
-                        <h3>📚 Add Study Session</h3>
+                        <h3>Add Study Session</h3>
                         <form onSubmit={handleAddEvent}>
                             <div className="form-group">
                                 <label>Session Title *</label>

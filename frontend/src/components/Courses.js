@@ -8,7 +8,6 @@ const Courses = () => {
     const [activeTab, setActiveTab] = useState('available');
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Use useMemo to fix the ESLint warning
     const sampleCourses = useMemo(() => [
         {
             id: 1,
@@ -20,7 +19,6 @@ const Courses = () => {
             category: 'Data Science',
             rating: 4.7,
             students: 1250,
-            image: '🧠',
             color: '#6c63ff',
             modules: 6,
             progress: 0
@@ -35,7 +33,6 @@ const Courses = () => {
             category: 'Programming',
             rating: 4.8,
             students: 890,
-            image: '💻',
             color: '#ff6b6b',
             modules: 8,
             progress: 0
@@ -50,7 +47,6 @@ const Courses = () => {
             category: 'Physics',
             rating: 4.9,
             students: 450,
-            image: '⚛️',
             color: '#4ecdc4',
             modules: 7,
             progress: 0
@@ -65,7 +61,6 @@ const Courses = () => {
             category: 'Computer Science',
             rating: 4.6,
             students: 2100,
-            image: '📊',
             color: '#45b7d1',
             modules: 5,
             progress: 0
@@ -80,7 +75,6 @@ const Courses = () => {
             category: 'Literature',
             rating: 4.5,
             students: 670,
-            image: '📚',
             color: '#96ceb4',
             modules: 6,
             progress: 0
@@ -95,14 +89,12 @@ const Courses = () => {
             category: 'Mathematics',
             rating: 4.7,
             students: 780,
-            image: '📐',
             color: '#feca57',
             modules: 8,
             progress: 0
         }
     ], []);
 
-    // Load courses and enrolled courses from localStorage
     useEffect(() => {
         const savedCourses = localStorage.getItem('availableCourses');
         const savedEnrolled = localStorage.getItem('enrolledCourses');
@@ -119,7 +111,6 @@ const Courses = () => {
         }
     }, [sampleCourses]);
 
-    // Save enrolled courses to localStorage
     useEffect(() => {
         localStorage.setItem('enrolledCourses', JSON.stringify(enrolledCourses));
     }, [enrolledCourses]);
@@ -153,7 +144,6 @@ const Courses = () => {
                     const newProgress = (newCompletedModules / course.modules) * 100;
                     const newCurrentModule = course.currentModule + 1;
                     
-                    // Track study progress
                     if (newCompletedModules <= course.modules) {
                         recordStudyProgress(course.title, 'session');
                     }
@@ -184,7 +174,6 @@ const Courses = () => {
     const CourseCard = ({ course, isEnrolled, onEnroll, onUnenroll, onCompleteModule }) => (
         <div className="course-card">
             <div className="course-header" style={{ backgroundColor: course.color }}>
-                <div className="course-image">{course.image}</div>
                 <div className="course-meta">
                     <span className="course-level">{course.level}</span>
                     <span className="course-category">{course.category}</span>
@@ -206,7 +195,7 @@ const Courses = () => {
                     </div>
                     <div className="info-item">
                         <span className="info-label">Rating:</span>
-                        <span className="info-value">⭐ {course.rating} ({course.students} students)</span>
+                        <span className="info-value">{course.rating} ({course.students} students)</span>
                     </div>
                 </div>
 
@@ -231,7 +220,7 @@ const Courses = () => {
                                 disabled={course.completedModules >= course.modules}
                                 className="complete-module-btn"
                             >
-                                {course.completedModules >= course.modules ? 'Course Completed! 🎉' : 'Complete Module'}
+                                {course.completedModules >= course.modules ? 'Course Completed!' : 'Complete Module'}
                             </button>
                             <button 
                                 onClick={() => onUnenroll(course.id)}
@@ -260,7 +249,6 @@ const Courses = () => {
                 <p>Discover and manage your learning journey</p>
             </div>
 
-            {/* Search and Filter */}
             <div className="courses-controls">
                 <div className="search-box">
                     <input
@@ -270,7 +258,6 @@ const Courses = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="search-input"
                     />
-                    <span className="search-icon">🔍</span>
                 </div>
                 
                 <div className="tab-buttons">
@@ -289,7 +276,6 @@ const Courses = () => {
                 </div>
             </div>
 
-            {/* Courses Grid */}
             <div className="courses-grid">
                 {activeTab === 'available' ? (
                     filteredAvailableCourses.length > 0 ? (
@@ -305,7 +291,6 @@ const Courses = () => {
                         ))
                     ) : (
                         <div className="no-courses">
-                            <div className="no-courses-icon">📚</div>
                             <h3>No courses found</h3>
                             <p>Try adjusting your search terms</p>
                         </div>
@@ -324,7 +309,6 @@ const Courses = () => {
                         ))
                     ) : (
                         <div className="no-courses">
-                            <div className="no-courses-icon">🎯</div>
                             <h3>No enrolled courses</h3>
                             <p>Enroll in courses to start your learning journey!</p>
                         </div>
@@ -332,7 +316,6 @@ const Courses = () => {
                 )}
             </div>
 
-            {/* Quick Stats */}
             {enrolledCourses.length > 0 && (
                 <div className="courses-stats">
                     <div className="stat-card">

@@ -1,11 +1,8 @@
 // StudyTools.js - UPDATED WITH MODERN MARKDOWN RENDERER
 import React, { useState } from 'react';
 import api from '../api';
-import MarkdownRenderer from './MarkdownRenderer'; // ADD THIS IMPORT
+import MarkdownRenderer from './MarkdownRenderer';
 
-// ... existing saveToStudyHistory function remains the same ...
-
-// Add this function at the top of StudyTools.js, right after imports
 const saveToStudyHistory = (filename, content, type) => {
     const studySession = {
         id: Date.now(),
@@ -24,7 +21,7 @@ const saveToStudyHistory = (filename, content, type) => {
     const updatedHistory = [studySession, ...history].slice(0, 50);
     localStorage.setItem('studyHistory', JSON.stringify(updatedHistory));
     
-    console.log('📚 Saved study tools output to history');
+    console.log('Saved study tools output to history');
 };
 
 const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
@@ -35,30 +32,26 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
     const [error, setError] = useState('');
     const [copySuccess, setCopySuccess] = useState('');
 
-    // Use prop selectedTopic if available, otherwise use local state
     const currentTopic = selectedTopic || localSelectedTopic;
     const currentSubtopics = selectedSubtopics;
 
-    // COPY TO CLIPBOARD FUNCTION
     const handleCopyToClipboard = async (content, type) => {
         try {
             await navigator.clipboard.writeText(content);
-            setCopySuccess(`✅ ${type} copied to clipboard!`);
+            setCopySuccess(`${type} copied to clipboard!`);
             setTimeout(() => setCopySuccess(''), 3000);
         } catch (err) {
             console.error('Failed to copy: ', err);
-            setCopySuccess(`❌ Failed to copy ${type}`);
+            setCopySuccess(`Failed to copy ${type}`);
             setTimeout(() => setCopySuccess(''), 3000);
         }
     };
 
-    // DOWNLOAD AS TXT FILE FUNCTION
     const handleDownloadTxt = (content, type) => {
         const element = document.createElement("a");
         const file = new Blob([content], { type: 'text/plain' });
         element.href = URL.createObjectURL(file);
         
-        // Create filename from topic and type
         const topicName = currentTopic.replace(/[^a-zA-Z0-9]/g, '_');
         const date = new Date().toISOString().split('T')[0];
         const fileType = type === 'notes' ? 'AI_Notes' : 'AI_Quiz';
@@ -68,11 +61,10 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
         element.click();
         document.body.removeChild(element);
         
-        setCopySuccess(`📥 ${type === 'notes' ? 'Notes' : 'Quiz'} downloaded as text file!`);
+        setCopySuccess(`${type === 'notes' ? 'Notes' : 'Quiz'} downloaded as text file!`);
         setTimeout(() => setCopySuccess(''), 3000);
     };
 
-    // DOWNLOAD AS PDF FUNCTION
     const handleDownloadPDF = (content, type) => {
         const printWindow = window.open('', '_blank');
         const topicName = currentTopic || 'Study Material';
@@ -161,7 +153,7 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
             printWindow.print();
         }, 500);
         
-        setCopySuccess(`🖨️ Opening print dialog for ${displayType}...`);
+        setCopySuccess(`Opening print dialog for ${displayType}...`);
         setTimeout(() => setCopySuccess(''), 3000);
     };
 
@@ -189,14 +181,12 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
                 const notesContent = response.data.notes;
                 setNotes(notesContent);
                 setQuiz('');
-                // ✅ SAVE TO HISTORY
                 saveToStudyHistory(currentTopic, notesContent, 'notes');
             } else if (type === 'quiz') {
                 response = await api.post('/quiz-generate/', payload);
                 const quizContent = response.data.quiz;
                 setQuiz(quizContent);
                 setNotes('');
-                // ✅ SAVE TO HISTORY
                 saveToStudyHistory(currentTopic, quizContent, 'quiz');
             }
         } catch (err) {
@@ -210,7 +200,6 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
         }
     };
 
-    // Action buttons component for reusability
     const ActionButtons = ({ content, type }) => (
         <div className="content-actions">
             <button 
@@ -218,7 +207,7 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
                 className="action-btn copy-btn"
                 title={`Copy ${type} to clipboard`}
             >
-                📋 Copy
+                Copy
             </button>
             
             <button 
@@ -226,7 +215,7 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
                 className="action-btn download-btn"
                 title={`Download ${type} as text file`}
             >
-                📥 Download TXT
+                Download TXT
             </button>
             
             <button 
@@ -234,7 +223,7 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
                 className="action-btn pdf-btn"
                 title={`Save ${type} as PDF`}
             >
-                📄 Save as PDF
+                Save as PDF
             </button>
         </div>
     );
@@ -248,7 +237,7 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
                     value={currentTopic}
                     onChange={(e) => setLocalSelectedTopic(e.target.value)}
                     className="topic-select"
-                    disabled={selectedTopic} // Disable if topic is passed from parent
+                    disabled={selectedTopic}
                 >
                     <option value="">Select a topic...</option>
                     {topics.map((topic) => (
@@ -264,7 +253,7 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
                         disabled={loading || !currentTopic}
                         className="tool-btn notes-btn"
                     >
-                        {loading === 'notes' ? 'Generating...' : '📝 Generate Notes'}
+                        {loading === 'notes' ? 'Generating...' : 'Generate Notes'}
                     </button>
                     
                     <button 
@@ -272,7 +261,7 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
                         disabled={loading || !currentTopic}
                         className="tool-btn quiz-btn"
                     >
-                        {loading === 'quiz' ? 'Generating...' : '📋 Generate Quiz'}
+                        {loading === 'quiz' ? 'Generating...' : 'Generate Quiz'}
                     </button>
                 </div>
             </div>
@@ -289,7 +278,6 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
                 </div>
             )}
 
-            {/* COPY SUCCESS MESSAGE */}
             {copySuccess && (
                 <div className="copy-success-message">
                     {copySuccess}
@@ -301,11 +289,10 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
             {notes && (
                 <div className="generated-content">
                     <div className="content-header">
-                        <h4>📚 Study Notes:</h4>
+                        <h4>Study Notes:</h4>
                         <ActionButtons content={notes} type="notes" />
                     </div>
                     <div className="content-output notes-output">
-                        {/* REPLACE raw text with MarkdownRenderer */}
                         <MarkdownRenderer content={notes} />
                     </div>
                 </div>
@@ -314,11 +301,10 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
             {quiz && (
                 <div className="generated-content">
                     <div className="content-header">
-                        <h4>📝 Quiz:</h4>
+                        <h4>Quiz:</h4>
                         <ActionButtons content={quiz} type="quiz" />
                     </div>
                     <div className="content-output quiz-output">
-                        {/* REPLACE raw text with MarkdownRenderer */}
                         <MarkdownRenderer content={quiz} />
                     </div>
                 </div>

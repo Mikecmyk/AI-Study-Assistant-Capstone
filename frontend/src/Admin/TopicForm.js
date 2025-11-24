@@ -74,7 +74,7 @@ function TopicForm({ topicId, onSaveSuccess, onCancel }) {
 
     return (
         <div style={{ padding: '20px', maxWidth: '600px', margin: 'auto', border: '1px solid #ddd', borderRadius: '8px' }}>
-            <h3>{isEditMode ? '✍️ Edit Topic' : '✨ Create New Topic'}</h3>
+            <h3>{isEditMode ? ' Edit Topic' : ' Create New Topic'}</h3>
             
             <form onSubmit={handleSubmit}>
                 <div style={{ marginBottom: '15px' }}>

@@ -11,7 +11,6 @@ function AdminTopicList() {
     const [showForm, setShowForm] = useState(false);
     const [editingTopic, setEditingTopic] = useState(null);
 
-    // --- Data Fetching ---
     const fetchTopics = async () => {
         try {
             const response = await api.get('/admin/topics/');
@@ -28,7 +27,6 @@ function AdminTopicList() {
         fetchTopics();
     }, []);
 
-    // --- Form Management ---
     const handleAddNew = () => {
         setEditingTopic(null);
         setShowForm(true);
@@ -42,7 +40,7 @@ function AdminTopicList() {
     const handleFormSuccess = () => {
         setShowForm(false);
         setEditingTopic(null);
-        fetchTopics(); // Refresh the list
+        fetchTopics();
     };
 
     const handleCancel = () => {
@@ -50,7 +48,6 @@ function AdminTopicList() {
         setEditingTopic(null);
     };
 
-    // --- Delete Operation ---
     const handleDelete = async (topicId) => {
         if (!window.confirm("Are you sure you want to delete this topic? This action cannot be undone.")) return;
 
@@ -64,7 +61,6 @@ function AdminTopicList() {
         }
     };
 
-    // Show Form if active
     if (showForm) {
         return (
             <div style={formContainerStyle}>
@@ -77,23 +73,22 @@ function AdminTopicList() {
         );
     }
 
-    if (loading) return <div style={loadingStyle}>📚 Loading Admin Topics...</div>;
-    if (error) return <div style={errorStyle}>❌ Error: {error}</div>;
+    if (loading) return <div style={loadingStyle}>Loading Admin Topics...</div>;
+    if (error) return <div style={errorStyle}>Error: {error}</div>;
 
     return (
         <div className="admin-topic-list-container" style={containerStyle}>
             
             <header style={headerStyle}>
                 <div>
-                    <h2 style={titleStyle}>📚 Topic Management</h2>
+                    <h2 style={titleStyle}>Topic Management</h2>
                     <p style={subtitleStyle}>Create and manage learning topics for your study platform</p>
                 </div>
                 <button onClick={handleAddNew} style={addButtonStyle}>
-                    + Add New Topic
+                    Add New Topic
                 </button>
             </header>
 
-            {/* Stats Summary */}
             <div style={statsStyle}>
                 <div style={statCardStyle}>
                     <h3>Total Topics</h3>
@@ -109,7 +104,6 @@ function AdminTopicList() {
                 </div>
             </div>
 
-            {/* --- Data Table --- */}
             <div className="topic-table-wrapper" style={tableWrapperStyle}>
                 <table style={tableStyle}>
                     <thead>
@@ -125,7 +119,7 @@ function AdminTopicList() {
                         {topics.length === 0 ? (
                             <tr>
                                 <td colSpan="5" style={noDataStyle}>
-                                    📝 No topics found. Create your first topic to get started!
+                                    No topics found. Create your first topic to get started!
                                 </td>
                             </tr>
                         ) : (
@@ -146,29 +140,27 @@ function AdminTopicList() {
                                     </td>
                                     <td style={tableCellStyle}>
                                         <span style={statusStyle(topic.is_active)}>
-                                            {topic.is_active ? '✅ Active' : '❌ Inactive'}
+                                            {topic.is_active ? 'Active' : 'Inactive'}
                                         </span>
                                     </td>
                                     <td style={tableCellStyle}>
                                         {new Date(topic.created_at || topic.date_created).toLocaleDateString()}
                                     </td>
                                     <td style={{ ...tableCellStyle, minWidth: '200px' }}>
-                                        {/* Edit Button */}
                                         <button 
                                             onClick={() => handleEdit(topic.id)}
                                             style={actionButtonStyle('edit')}
                                             title="Edit this topic"
                                         >
-                                            ✏️ Edit
+                                            Edit
                                         </button>
                                         
-                                        {/* Delete Button */}
                                         <button 
                                             onClick={() => handleDelete(topic.id)}
                                             style={actionButtonStyle('delete')}
                                             title="Delete this topic"
                                         >
-                                            🗑️ Delete
+                                            Delete
                                         </button>
                                     </td>
                                 </tr>
@@ -181,7 +173,6 @@ function AdminTopicList() {
     );
 }
 
-// Enhanced Styles
 const containerStyle = { 
     padding: '30px', 
     backgroundColor: 'white', 

@@ -13,7 +13,7 @@ function Auth({ onAuth }) {
     setError(null);
     setIsLoading(true);
 
-    // 👉 Corrected endpoints (no /api prefix here)
+    //  Corrected endpoints (no /api prefix here)
     const endpoint = isLogin ? '/auth/login/' : '/auth/register/';
     const action = isLogin ? 'Login' : 'Registration';
 
@@ -26,7 +26,7 @@ function Auth({ onAuth }) {
         localStorage.setItem('token', token);
         onAuth({ user: username, token });
       } else {
-        console.log(`✅ Registration successful for ${data.username}. Please log in.`);
+        console.log(` Registration successful for ${data.username}. Please log in.`);
         setIsLogin(true);
       }
 

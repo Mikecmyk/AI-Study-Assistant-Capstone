@@ -11,7 +11,6 @@ function AdminCourseList() {
     const [showForm, setShowForm] = useState(false);
     const [editingCourse, setEditingCourse] = useState(null);
 
-    // --- Data Fetching ---
     const fetchCourses = async () => {
         try {
             const response = await api.get('/admin/courses/');
@@ -28,7 +27,6 @@ function AdminCourseList() {
         fetchCourses();
     }, []);
 
-    // --- Form Management ---
     const handleAddNew = () => {
         setEditingCourse(null);
         setShowForm(true);
@@ -42,7 +40,7 @@ function AdminCourseList() {
     const handleFormSuccess = () => {
         setShowForm(false);
         setEditingCourse(null);
-        fetchCourses(); // Refresh the list
+        fetchCourses();
     };
 
     const handleCancel = () => {
@@ -50,7 +48,6 @@ function AdminCourseList() {
         setEditingCourse(null);
     };
 
-    // --- Delete Operation ---
     const handleDelete = async (courseId) => {
         if (!window.confirm("Are you sure you want to delete this course? All associated data will be lost.")) return;
 
@@ -64,7 +61,6 @@ function AdminCourseList() {
         }
     };
 
-    // Show Form if active
     if (showForm) {
         return (
             <div style={formContainerStyle}>
@@ -77,23 +73,22 @@ function AdminCourseList() {
         );
     }
 
-    if (loading) return <div style={loadingStyle}>🎓 Loading Admin Courses...</div>;
-    if (error) return <div style={errorStyle}>❌ Error: {error}</div>;
+    if (loading) return <div style={loadingStyle}>Loading Admin Courses...</div>;
+    if (error) return <div style={errorStyle}>Error: {error}</div>;
 
     return (
         <div className="admin-course-list-container" style={containerStyle}>
             
             <header style={headerStyle}>
                 <div>
-                    <h2 style={titleStyle}>🎓 Course Management</h2>
+                    <h2 style={titleStyle}>Course Management</h2>
                     <p style={subtitleStyle}>Organize topics into structured learning courses</p>
                 </div>
                 <button onClick={handleAddNew} style={addButtonStyle}>
-                    + Add New Course
+                    Add New Course
                 </button>
             </header>
 
-            {/* Stats Summary */}
             <div style={statsStyle}>
                 <div style={statCardStyle}>
                     <h3>Total Courses</h3>
@@ -109,7 +104,6 @@ function AdminCourseList() {
                 </div>
             </div>
 
-            {/* --- Data Table --- */}
             <div className="course-table-wrapper" style={tableWrapperStyle}>
                 <table style={tableStyle}>
                     <thead>
@@ -126,7 +120,7 @@ function AdminCourseList() {
                         {courses.length === 0 ? (
                             <tr>
                                 <td colSpan="6" style={noDataStyle}>
-                                    📚 No courses found. Create your first course to organize topics!
+                                    No courses found. Create your first course to organize topics!
                                 </td>
                             </tr>
                         ) : (
@@ -155,26 +149,24 @@ function AdminCourseList() {
                                     </td>
                                     <td style={tableCellStyle}>
                                         <span style={statusStyle(course.is_published)}>
-                                            {course.is_published ? '📢 Published' : '📝 Draft'}
+                                            {course.is_published ? 'Published' : 'Draft'}
                                         </span>
                                     </td>
                                     <td style={{ ...tableCellStyle, minWidth: '180px' }}>
-                                        {/* Edit Button */}
                                         <button 
                                             onClick={() => handleEdit(course.id)}
                                             style={actionButtonStyle('edit')}
                                             title="Edit this course"
                                         >
-                                            ✏️ Edit
+                                            Edit
                                         </button>
                                         
-                                        {/* Delete Button */}
                                         <button 
                                             onClick={() => handleDelete(course.id)}
                                             style={actionButtonStyle('delete')}
                                             title="Delete this course"
                                         >
-                                            🗑️ Delete
+                                            Delete
                                         </button>
                                     </td>
                                 </tr>
@@ -187,7 +179,6 @@ function AdminCourseList() {
     );
 }
 
-// Enhanced Styles
 const containerStyle = { 
     padding: '30px', 
     backgroundColor: 'white', 

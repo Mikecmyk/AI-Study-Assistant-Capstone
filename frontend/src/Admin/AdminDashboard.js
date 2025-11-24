@@ -33,19 +33,19 @@ const AdminDashboard = () => {
                 <h1 style={logoStyle}>Admin Panel</h1>
                 <div style={navLinksStyle}>
                     <button onClick={() => setCurrentView('analytics')} style={navLinkButtonStyle(currentView === 'analytics')}>
-                        📊 Analytics
+                        Analytics
                     </button>
                     <button onClick={() => setCurrentView('topics')} style={navLinkButtonStyle(currentView === 'topics')}>
-                        📚 Topics
+                        Topics
                     </button>
                     <button onClick={() => setCurrentView('courses')} style={navLinkButtonStyle(currentView === 'courses')}>
-                        🎓 Courses
+                        Courses
                     </button>
                     <button onClick={() => setCurrentView('users')} style={navLinkButtonStyle(currentView === 'users')}>
-                        👥 Users
+                        Users
                     </button>
                     <button onClick={() => setCurrentView('ai-config')} style={navLinkButtonStyle(currentView === 'ai-config')}>
-                        🤖 AI Config
+                        AI Config
                     </button>
                 </div>
             </nav>
@@ -57,7 +57,6 @@ const AdminDashboard = () => {
     );
 };
 
-// Basic Styling for the Admin Layout
 const adminDashboardStyle = { 
     display: 'flex', 
     minHeight: '100vh', 

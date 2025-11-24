@@ -9,7 +9,7 @@ function AIConfigPanel() {
         defaultSessionDuration: 60,
         enableAdvancedFeatures: true,
         maxQuizQuestions: 5,
-        notesDetailLevel: 'medium' // low, medium, high
+        notesDetailLevel: 'medium'
     });
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState('');
@@ -29,16 +29,12 @@ function AIConfigPanel() {
         setMessage('');
 
         try {
-            // In real app, send to your backend API
-            // await api.patch('/admin/ai-config/', config);
-            
-            // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1000));
             
-            setMessage('✅ AI configuration saved successfully!');
+            setMessage('AI configuration saved successfully!');
             setTimeout(() => setMessage(''), 3000);
         } catch (err) {
-            setMessage('❌ Failed to save configuration');
+            setMessage('Failed to save configuration');
         } finally {
             setSaving(false);
         }
@@ -47,20 +43,19 @@ function AIConfigPanel() {
     return (
         <div style={containerStyle}>
             <header style={headerStyle}>
-                <h2 style={titleStyle}>🤖 AI Configuration</h2>
+                <h2 style={titleStyle}>AI Configuration</h2>
                 <p style={subtitleStyle}>Customize how AI generates study content</p>
             </header>
 
             {message && (
-                <div style={messageStyle(message.includes('✅'))}>
+                <div style={messageStyle(message.includes('successfully'))}>
                     {message}
                 </div>
             )}
 
             <form onSubmit={handleSave} style={formStyle}>
-                {/* Model Settings */}
                 <div style={sectionStyle}>
-                    <h3 style={sectionTitleStyle}>🧠 Model Settings</h3>
+                    <h3 style={sectionTitleStyle}>Model Settings</h3>
                     
                     <div style={fieldGroupStyle}>
                         <label style={labelStyle}>
@@ -85,9 +80,8 @@ function AIConfigPanel() {
                     </div>
                 </div>
 
-                {/* Study Plan Settings */}
                 <div style={sectionStyle}>
-                    <h3 style={sectionTitleStyle}>📅 Study Plan Settings</h3>
+                    <h3 style={sectionTitleStyle}>Study Plan Settings</h3>
                     
                     <div style={fieldGroupStyle}>
                         <label style={labelStyle}>
@@ -121,9 +115,8 @@ function AIConfigPanel() {
                     </div>
                 </div>
 
-                {/* Content Generation Settings */}
                 <div style={sectionStyle}>
-                    <h3 style={sectionTitleStyle}>📝 Content Generation</h3>
+                    <h3 style={sectionTitleStyle}>Content Generation</h3>
                     
                     <div style={fieldGroupStyle}>
                         <label style={labelStyle}>
@@ -173,7 +166,6 @@ function AIConfigPanel() {
                     </div>
                 </div>
 
-                {/* Action Buttons */}
                 <div style={actionsStyle}>
                     <button 
                         type="button" 
@@ -187,7 +179,7 @@ function AIConfigPanel() {
                         })}
                         style={resetButtonStyle}
                     >
-                        🔄 Reset to Defaults
+                        Reset to Defaults
                     </button>
                     
                     <button 
@@ -195,7 +187,7 @@ function AIConfigPanel() {
                         disabled={saving}
                         style={saveButtonStyle(saving)}
                     >
-                        {saving ? '💾 Saving...' : '💾 Save Configuration'}
+                        {saving ? 'Saving...' : 'Save Configuration'}
                     </button>
                 </div>
             </form>
@@ -203,7 +195,6 @@ function AIConfigPanel() {
     );
 }
 
-// Enhanced Styles for AI Config
 const containerStyle = {
     padding: '30px',
     backgroundColor: 'white',
