@@ -1,31 +1,30 @@
-// StudyTools.js (ENHANCED WITH HISTORY TRACKING)
+// StudyTools.js - UPDATED WITH MODERN MARKDOWN RENDERER
 import React, { useState } from 'react';
 import api from '../api';
+import MarkdownRenderer from './MarkdownRenderer'; // ADD THIS IMPORT
 
-// STUDY HISTORY TRACKING FUNCTION
-const saveToStudyHistory = (topic, content, type) => {
+// ... existing saveToStudyHistory function remains the same ...
+
+// Add this function at the top of StudyTools.js, right after imports
+const saveToStudyHistory = (filename, content, type) => {
     const studySession = {
         id: Date.now(),
-        topic: topic,
+        topic: `Study Tools: ${filename}`,
         duration: 'AI Generated',
         content: content.substring(0, 200) + '...',
         type: type,
         timestamp: new Date().toISOString(),
         date: new Date().toLocaleDateString(),
-        time: new Date().toLocaleTimeString()
+        time: new Date().toLocaleTimeString(),
+        filename: filename
     };
     
-    // Get existing history
     const existingHistory = localStorage.getItem('studyHistory');
     const history = existingHistory ? JSON.parse(existingHistory) : [];
-    
-    // Add new session to beginning of array
     const updatedHistory = [studySession, ...history].slice(0, 50);
-    
-    // Save back to localStorage
     localStorage.setItem('studyHistory', JSON.stringify(updatedHistory));
     
-    console.log('📚 Saved to study history:', studySession);
+    console.log('📚 Saved study tools output to history');
 };
 
 const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
@@ -85,14 +84,59 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
                 <head>
                     <title>Zonlus ${displayType} - ${topicName}</title>
                     <style>
-                        body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
-                        .header { text-align: center; border-bottom: 2px solid #4361ee; padding-bottom: 20px; margin-bottom: 30px; }
-                        .topic { color: #4361ee; font-size: 24px; margin-bottom: 10px; }
-                        .type { color: #f72585; font-size: 18px; margin-bottom: 10px; }
-                        .date { color: #666; font-size: 14px; }
-                        .content { white-space: pre-wrap; font-size: 14px; }
-                        .footer { margin-top: 40px; text-align: center; color: #999; font-size: 12px; }
-                        @media print { body { margin: 20px; } }
+                        body { 
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                            margin: 40px; 
+                            line-height: 1.6; 
+                            color: #333;
+                            max-width: 800px;
+                            margin: 0 auto;
+                            padding: 40px 20px;
+                        }
+                        .header { 
+                            text-align: center; 
+                            border-bottom: 3px solid #4361ee; 
+                            padding-bottom: 25px; 
+                            margin-bottom: 35px; 
+                        }
+                        .topic { 
+                            color: #4361ee; 
+                            font-size: 32px; 
+                            margin-bottom: 12px;
+                            font-weight: 700;
+                        }
+                        .type { 
+                            color: #f72585; 
+                            font-size: 20px; 
+                            margin-bottom: 12px;
+                            font-weight: 600;
+                        }
+                        .date { 
+                            color: #666; 
+                            font-size: 16px; 
+                        }
+                        .content { 
+                            white-space: pre-wrap; 
+                            font-size: 15px;
+                            line-height: 1.7;
+                        }
+                        .footer { 
+                            margin-top: 50px; 
+                            text-align: center; 
+                            color: #999; 
+                            font-size: 14px;
+                            border-top: 1px solid #eee;
+                            padding-top: 20px;
+                        }
+                        @media print { 
+                            body { 
+                                margin: 20px; 
+                                padding: 20px;
+                            }
+                            .header {
+                                margin-bottom: 25px;
+                            }
+                        }
                     </style>
                 </head>
                 <body>
@@ -103,7 +147,8 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
                     </div>
                     <div class="content">${content}</div>
                     <div class="footer">
-                        Created with Zonlus - Your AI Exam Partner
+                        Created with Zonlus - Your AI Exam Partner<br>
+                        Learn smarter, not harder.
                     </div>
                 </body>
             </html>
@@ -260,7 +305,8 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
                         <ActionButtons content={notes} type="notes" />
                     </div>
                     <div className="content-output notes-output">
-                        {notes}
+                        {/* REPLACE raw text with MarkdownRenderer */}
+                        <MarkdownRenderer content={notes} />
                     </div>
                 </div>
             )}
@@ -272,7 +318,8 @@ const StudyTools = ({ topics, selectedTopic, selectedSubtopics = [] }) => {
                         <ActionButtons content={quiz} type="quiz" />
                     </div>
                     <div className="content-output quiz-output">
-                        {quiz}
+                        {/* REPLACE raw text with MarkdownRenderer */}
+                        <MarkdownRenderer content={quiz} />
                     </div>
                 </div>
             )}

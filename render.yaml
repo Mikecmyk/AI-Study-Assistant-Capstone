@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: ai-study-assistant-backend
+    env: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn study_config.wsgi:application"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ai-study-assistant-db
+          property: connectionString
+      - key: FRONTEND_URL
+        value: https://your-frontend-app.onrender.com
+
+databases:
+  - name: ai-study-assistant-db
+    plan: free
+    databaseName: ai_study_assistant
+    user: ai_study_user
