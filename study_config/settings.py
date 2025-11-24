@@ -71,7 +71,10 @@ ROOT_URLCONF = 'study_config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            # ADDED: Point to React build directory for serving index.html
+            BASE_DIR / 'frontend/build',
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -149,9 +152,10 @@ STATIC_URL = '/static/'
 # FIXED: STATIC_ROOT should always be set (this is where collectstatic puts files)
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# FIXED: Only use STATICFILES_DIRS if the static directory actually exists
-# Remove or comment out the line below since the static directory doesn't exist
-# STATICFILES_DIRS = [BASE_DIR / "static"]  # Commented out - directory doesn't exist
+# ADDED: Serve React static files
+STATICFILES_DIRS = [
+    BASE_DIR / 'frontend/build/static',
+]
 
 if not DEBUG:
     # Configure WhiteNoise storage backend with compression and versioning

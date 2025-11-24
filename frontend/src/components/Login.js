@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { Link } from "react-router-dom";
-import './Dashboard.css'; 
+import api from '../api';
+import './Dashboard.css';
+
 function Login({ onLoginSuccess }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(''); 
+    const [error, setError] = useState('');
 
     const handleLogin = async (e) => { 
         e.preventDefault();
@@ -20,38 +22,15 @@ function Login({ onLoginSuccess }) {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/auth/login/', { 
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email: email, password }),
+            const response = await api.post('/auth/login/', { 
+                email: email, 
+                password: password 
             });
 
-            let data = {};
-            try {
-                data = await response.json();
-            } catch (jsonError) {
-                console.warn("Could not parse response as JSON.");
-            }
-
             console.log('Login response status:', response.status);
-            console.log('Login response data:', data);
+            console.log('Login response data:', response.data);
 
-            if (!response.ok) {
-                let errorMessage = `Login failed (Status: ${response.status}).`;
-                
-                if (response.status === 401) {
-                    errorMessage = "Invalid credentials. Please try again.";
-                } else if (response.status === 400 && data.non_field_errors) {
-                    errorMessage = data.non_field_errors[0];
-                } else {
-                    errorMessage = data.detail || data.message || errorMessage;
-                }
-                
-                throw new Error(errorMessage);
-            }
-            
+            const data = response.data;
             const authToken = data.token || data.key;
 
             if (!authToken) {
@@ -64,8 +43,24 @@ function Login({ onLoginSuccess }) {
             }
 
         } catch (error) {
-            console.error("Login attempt failed:", error.message);
-            setError(error.message);
+            console.error("Login attempt failed:", error);
+            
+            if (error.response) {
+                const status = error.response.status;
+                const errorData = error.response.data;
+                
+                if (status === 401) {
+                    setError("Invalid credentials. Please try again.");
+                } else if (status === 400 && errorData.non_field_errors) {
+                    setError(errorData.non_field_errors[0]);
+                } else {
+                    setError(errorData.detail || errorData.message || `Login failed (Status: ${status})`);
+                }
+            } else if (error.request) {
+                setError("Cannot connect to server. Please check your connection.");
+            } else {
+                setError(error.message || "An unexpected error occurred");
+            }
         } finally {
             setIsLoading(false); 
         }
@@ -74,30 +69,25 @@ function Login({ onLoginSuccess }) {
     return (
         <div className="auth-container">
             <div className="auth-card">
-                {/* Branding Side */}
                 <div className="auth-branding">
                     <div>
                         <div className="brand-header">
-                            <div className="brand-icon">🎓</div>
                             <div className="brand-title">Zonlus</div>
                         </div>
                         
-                        <h1 className="brand-main-title">Welcome Back, Scholar!</h1>
+                        <h1 className="brand-main-title">Welcome Back</h1>
                         <p className="brand-subtitle">
                             Continue your journey to academic excellence with AI-powered study tools and personalized learning paths.
                         </p>
                         
                         <div className="feature-list">
                             <div className="feature-item">
-                                <div className="feature-icon">🚀</div>
                                 <span>AI-Powered Study Plans</span>
                             </div>
                             <div className="feature-item">
-                                <div className="feature-icon">📊</div>
                                 <span>Smart Progress Tracking</span>
                             </div>
                             <div className="feature-item">
-                                <div className="feature-icon">🎯</div>
                                 <span>Personalized Learning</span>
                             </div>
                         </div>
@@ -105,21 +95,18 @@ function Login({ onLoginSuccess }) {
                     
                     <div className="testimonial">
                         <p className="testimonial-text">
-                            "Zonlus transformed how I study! The AI-generated plans helped me improve my grades by 2 levels in just one semester."
+                            "Zonlus transformed how I study! The AI-generated plans helped me improve my grades significantly in just one semester."
                         </p>
                         <p className="testimonial-author">- Sarah, Medical Student</p>
                     </div>
                 </div>
 
-                {/* Form Side */}
                 <div className="auth-form-side">
-                    {/* Mobile Branding */}
                     <div className="mobile-brand">
                         <div className="mobile-brand-header">
-                            <div className="brand-icon">🎓</div>
                             <div className="mobile-brand-title">Zonlus</div>
                         </div>
-                        <h2>Welcome Back!</h2>
+                        <h2>Welcome Back</h2>
                     </div>
 
                     <div className="form-container">
@@ -138,7 +125,6 @@ function Login({ onLoginSuccess }) {
                                     Email Address
                                 </label>
                                 <div className="input-wrapper">
-                                    <div className="input-icon">📧</div>
                                     <input
                                         id="email"
                                         name="email"
@@ -164,7 +150,6 @@ function Login({ onLoginSuccess }) {
                                     </Link>
                                 </div>
                                 <div className="input-wrapper">
-                                    <div className="input-icon">🔒</div>
                                     <input
                                         id="password"
                                         name="password"
@@ -174,7 +159,7 @@ function Login({ onLoginSuccess }) {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         className="form-input"
-                                        placeholder="••••••••"
+                                        placeholder="Enter your password"
                                         disabled={isLoading}
                                     />
                                     <button
@@ -182,7 +167,7 @@ function Login({ onLoginSuccess }) {
                                         onClick={() => setShowPassword(!showPassword)}
                                         className="password-toggle"
                                     >
-                                        {showPassword ? '🙈' : '👁️'}
+                                        {showPassword ? 'Hide' : 'Show'}
                                     </button>
                                 </div>
                             </div>
