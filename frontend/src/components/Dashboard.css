@@ -61,14 +61,12 @@
 .productivity-chart,
 .study-history {
     /* Use the generic card style */
-    @extend .dashboard-card; /* If using a preprocessor like Sass */
     /* If only using plain CSS, add the styles directly: */
     background-color: var(--card-background);
     padding: 25px;
     border-radius: 12px;
     box-shadow: var(--shadow-light);
 }
-
 
 /* --- 4. Form and Button Styling (For the Study Plan Generator) --- */
 
@@ -760,7 +758,7 @@
 
 .form-label-row {
     display: flex;
-    justify-content: between;
+    justify-content: space-between;
     align-items: center;
 }
 
@@ -2798,7 +2796,7 @@
     }
 }
 
-//* ===== AUTH STYLES ===== */
+/* ===== AUTH STYLES ===== */
 .auth-container {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
