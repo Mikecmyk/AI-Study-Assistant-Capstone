@@ -1,5 +1,24 @@
-// src/components/ProductivityChart.js (FIXED VERSION - NO WARNINGS)
 import React, { useState, useEffect, useCallback } from 'react';
+
+// Get current user ID for data isolation - FIXED VERSION
+const getCurrentUserId = () => {
+  try {
+    const userData = localStorage.getItem('user');
+    if (!userData) return 'anonymous';
+    
+    // Try to parse as JSON first
+    try {
+      const user = JSON.parse(userData);
+      return user.id || user.user_id || 'anonymous';
+    } catch (e) {
+      // If it's not JSON, return the string directly or a hash of it
+      return userData;
+    }
+  } catch (error) {
+    console.error('Error getting user ID:', error);
+    return 'anonymous';
+  }
+};
 
 const ProductivityChart = () => {
     const [chartData, setChartData] = useState([]);
@@ -29,7 +48,9 @@ const ProductivityChart = () => {
 
     // Load study data from localStorage
     const loadStudyData = useCallback(() => {
-        const savedData = localStorage.getItem('studyProgress');
+        const userId = getCurrentUserId();
+        const storageKey = `studyProgress_${userId}`;
+        const savedData = localStorage.getItem(storageKey);
         if (!savedData) {
             // Initialize with empty data structure
             const initialData = {
@@ -37,7 +58,7 @@ const ProductivityChart = () => {
                 tasksCompleted: 0,
                 dailyProgress: generateEmptyWeekData()
             };
-            localStorage.setItem('studyProgress', JSON.stringify(initialData));
+            localStorage.setItem(storageKey, JSON.stringify(initialData));
             setChartData(initialData.dailyProgress);
             calculateMetrics(initialData.dailyProgress);
         } else {
@@ -49,7 +70,9 @@ const ProductivityChart = () => {
 
     // Update chart data based on time range
     const updateChartData = useCallback(() => {
-        const savedData = JSON.parse(localStorage.getItem('studyProgress'));
+        const userId = getCurrentUserId();
+        const storageKey = `studyProgress_${userId}`;
+        const savedData = JSON.parse(localStorage.getItem(storageKey));
         if (savedData) {
             if (timeRange === 'week') {
                 setChartData(savedData.dailyProgress);
@@ -69,7 +92,9 @@ const ProductivityChart = () => {
 
     // Function to record study activity
     const recordStudyActivity = useCallback((topic, taskType) => {
-        const savedData = JSON.parse(localStorage.getItem('studyProgress'));
+        const userId = getCurrentUserId();
+        const storageKey = `studyProgress_${userId}`;
+        const savedData = JSON.parse(localStorage.getItem(storageKey));
         if (savedData) {
             const today = new Date();
             const dayIndex = today.getDay() === 0 ? 6 : today.getDay() - 1;
@@ -101,7 +126,7 @@ const ProductivityChart = () => {
                 tasksCompleted: savedData.tasksCompleted + 1
             };
 
-            localStorage.setItem('studyProgress', JSON.stringify(updatedData));
+            localStorage.setItem(storageKey, JSON.stringify(updatedData));
             setChartData(updatedDailyProgress);
             calculateMetrics(updatedDailyProgress);
         }
@@ -205,7 +230,7 @@ export const recordStudyProgress = (topic, taskType) => {
         detail: { 
             topic, 
             taskType,
-            timestamp: new Date().toISOString() // Add timestamp for history
+            timestamp: new Date().toISOString()
         }
     }));
 };

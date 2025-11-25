@@ -1,4 +1,3 @@
-// Dashboard.js - UPDATED WITH SMART TASK GENERATION
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api'; 
 import StudyTools from './StudyTools';
@@ -14,6 +13,26 @@ import { recordStudyProgress } from './ProductivityChart';
 import './Dashboard.css'; 
 import { Link } from 'react-router-dom';
 
+// Get current user ID for data isolation - FIXED VERSION
+const getCurrentUserId = () => {
+  try {
+    const userData = localStorage.getItem('user');
+    if (!userData) return 'anonymous';
+    
+    // Try to parse as JSON first
+    try {
+      const user = JSON.parse(userData);
+      return user.id || user.user_id || 'anonymous';
+    } catch (e) {
+      // If it's not JSON, return the string directly or a hash of it
+      return userData;
+    }
+  } catch (error) {
+    console.error('Error getting user ID:', error);
+    return 'anonymous';
+  }
+};
+
 const MOCK_TASKS = [
     { id: 1, title: 'Review key Quantum Concepts', subject: 'Physics', difficulty: 'High', dueTime: 'Today, 5 PM', isCompleted: false },
     { id: 2, title: 'Practice Grammar Exercises', subject: 'English', difficulty: 'Mid', dueTime: 'Tomorrow, 10 AM', isCompleted: false },
@@ -22,6 +41,7 @@ const MOCK_TASKS = [
 ];
 
 const saveToStudyHistory = (topic, duration, content, type = 'study_plan') => {
+    const userId = getCurrentUserId();
     const studySession = {
         id: Date.now(),
         topic: topic,
@@ -33,15 +53,18 @@ const saveToStudyHistory = (topic, duration, content, type = 'study_plan') => {
         time: new Date().toLocaleTimeString()
     };
     
-    const existingHistory = localStorage.getItem('studyHistory');
+    const storageKey = `studyHistory_${userId}`;
+    const existingHistory = localStorage.getItem(storageKey);
     const history = existingHistory ? JSON.parse(existingHistory) : [];
     const updatedHistory = [studySession, ...history].slice(0, 50);
-    localStorage.setItem('studyHistory', JSON.stringify(updatedHistory));
+    localStorage.setItem(storageKey, JSON.stringify(updatedHistory));
 };
 
 // Generate tasks from study history
 const generateTasksFromStudyHistory = () => {
-    const studyHistory = JSON.parse(localStorage.getItem('studyHistory') || '[]');
+    const userId = getCurrentUserId();
+    const storageKey = `studyHistory_${userId}`;
+    const studyHistory = JSON.parse(localStorage.getItem(storageKey) || '[]');
     const recentSessions = studyHistory.slice(0, 10);
     
     const generatedTasks = recentSessions.map(session => {
@@ -138,7 +161,9 @@ function Dashboard({ logout }) {
     };
 
     const loadAllTasks = useCallback(() => {
-        const calendarTasks = JSON.parse(localStorage.getItem('calendarTasks') || '[]');
+        const userId = getCurrentUserId();
+        const calendarStorageKey = `calendarTasks_${userId}`;
+        const calendarTasks = JSON.parse(localStorage.getItem(calendarStorageKey) || '[]');
         
         const mockTasks = MOCK_TASKS.filter(mockTask => 
             !calendarTasks.some(calTask => calTask.title === mockTask.title)
@@ -175,7 +200,7 @@ function Dashboard({ logout }) {
                 setNotificationPermission(permission);
                 if (permission === "granted") {
                     console.log("Notification permission granted");
-                    alert("Notifications enabled! You'll get reminders 30 minutes before study sessions.");
+                    alert("Notifications enabled! You will get reminders 30 minutes before study sessions.");
                 }
             });
         }
@@ -267,7 +292,9 @@ function Dashboard({ logout }) {
                 console.warn('API fetch failed, using localStorage only:', apiError);
             }
             
-            const storedTempTopics = localStorage.getItem('temporaryTopics');
+            const userId = getCurrentUserId();
+            const storageKey = `temporaryTopics_${userId}`;
+            const storedTempTopics = localStorage.getItem(storageKey);
             const tempTopics = storedTempTopics ? JSON.parse(storedTempTopics) : [];
             const allTopics = [...apiTopics, ...tempTopics];
             
@@ -385,20 +412,24 @@ function Dashboard({ logout }) {
         if (task && task.eventId) {
             console.log(`Calendar task "${task.title}" marked as ${task.isCompleted ? 'incomplete' : 'completed'}`);
             
-            const events = JSON.parse(localStorage.getItem('studyEvents') || '[]');
+            const userId = getCurrentUserId();
+            const storageKey = `studyEvents_${userId}`;
+            const events = JSON.parse(localStorage.getItem(storageKey) || '[]');
             const updatedEvents = events.map(event => 
                 event.id === task.eventId 
                     ? { ...event, completed: !task.isCompleted }
                     : event
             );
-            localStorage.setItem('studyEvents', JSON.stringify(updatedEvents));
+            localStorage.setItem(storageKey, JSON.stringify(updatedEvents));
         }
     };
 
     const handleViewDetails = (id) => {
         const task = tasks.find(t => t.id === id);
         if (task && task.eventId) {
-            const events = JSON.parse(localStorage.getItem('studyEvents') || '[]');
+            const userId = getCurrentUserId();
+            const storageKey = `studyEvents_${userId}`;
+            const events = JSON.parse(localStorage.getItem(storageKey) || '[]');
             const event = events.find(e => e.id === task.eventId);
             
             if (event) {
@@ -412,7 +443,9 @@ function Dashboard({ logout }) {
     };
 
     const clearOldTopics = () => {
-        localStorage.removeItem('temporaryTopics');
+        const userId = getCurrentUserId();
+        const storageKey = `temporaryTopics_${userId}`;
+        localStorage.removeItem(storageKey);
         setRefreshTopics(prev => !prev);
         alert('Old topics cleared! Refreshing topics list...');
     };

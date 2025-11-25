@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import './Dashboard.css'; 
+
 function Register() {
     const [formData, setFormData] = useState({
         email: '',
@@ -84,7 +85,7 @@ function Register() {
                 throw new Error(errorMessage);
             }
 
-            setSuccessMessage("🎉 Success! Your account has been created. Redirecting to login...");
+            setSuccessMessage("Success! Your account has been created. Redirecting to login...");
             
             setTimeout(() => {
                 navigate('/login');
@@ -101,13 +102,10 @@ function Register() {
     return (
         <div className="auth-container">
             <div className="auth-card">
-                {/* Form Side */}
                 <div className="auth-form-side">
-                    {/* Mobile Branding */}
                     <div className="mobile-brand">
                         <div className="mobile-brand-header">
-                            <div className="brand-icon">🎓</div>
-                            <div className="mobile-brand-title">Zonlus</div>
+                            <div className="brand-title">Zonlus</div>
                         </div>
                         <h2>Join Zonlus</h2>
                     </div>
@@ -128,7 +126,6 @@ function Register() {
                                     Email Address
                                 </label>
                                 <div className="input-wrapper">
-                                    <div className="input-icon">📧</div>
                                     <input
                                         id="email"
                                         name="email"
@@ -149,7 +146,6 @@ function Register() {
                                     Password
                                 </label>
                                 <div className="input-wrapper">
-                                    <div className="input-icon">🔒</div>
                                     <input
                                         id="password"
                                         name="password"
@@ -159,7 +155,7 @@ function Register() {
                                         value={formData.password}
                                         onChange={handleChange}
                                         className="form-input"
-                                        placeholder="•••••••• (min 8 characters)"
+                                        placeholder="Minimum 8 characters"
                                         disabled={isLoading}
                                     />
                                     <button
@@ -167,7 +163,7 @@ function Register() {
                                         onClick={() => setShowPassword(!showPassword)}
                                         className="password-toggle"
                                     >
-                                        {showPassword ? '🙈' : '👁️'}
+                                        {showPassword ? 'Hide' : 'Show'}
                                     </button>
                                 </div>
                             </div>
@@ -177,7 +173,6 @@ function Register() {
                                     Confirm Password
                                 </label>
                                 <div className="input-wrapper">
-                                    <div className="input-icon">🔒</div>
                                     <input
                                         id="confirmPassword"
                                         name="confirmPassword"
@@ -187,7 +182,7 @@ function Register() {
                                         value={formData.confirmPassword}
                                         onChange={handleChange}
                                         className="form-input"
-                                        placeholder="••••••••"
+                                        placeholder="Confirm your password"
                                         disabled={isLoading}
                                     />
                                     <button
@@ -195,7 +190,7 @@ function Register() {
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                                         className="password-toggle"
                                     >
-                                        {showConfirmPassword ? '🙈' : '👁️'}
+                                        {showConfirmPassword ? 'Hide' : 'Show'}
                                     </button>
                                 </div>
                             </div>
@@ -229,11 +224,9 @@ function Register() {
                     </div>
                 </div>
 
-                {/* Branding Side */}
                 <div className="auth-branding">
                     <div>
                         <div className="brand-header">
-                            <div className="brand-icon">🎓</div>
                             <div className="brand-title">Zonlus</div>
                         </div>
                         
@@ -244,15 +237,12 @@ function Register() {
                         
                         <div className="feature-list">
                             <div className="feature-item">
-                                <div className="feature-icon">🚀</div>
                                 <span>AI-Powered Study Plans</span>
                             </div>
                             <div className="feature-item">
-                                <div className="feature-icon">📊</div>
                                 <span>Smart Progress Tracking</span>
                             </div>
                             <div className="feature-item">
-                                <div className="feature-icon">🎯</div>
                                 <span>Personalized Learning Paths</span>
                             </div>
                         </div>
