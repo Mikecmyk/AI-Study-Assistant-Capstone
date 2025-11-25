@@ -1,57 +1,93 @@
-// src/components/StudyTaskCard.js
-
+// StudyTaskCard.js - UPDATED WITH TASK TYPE SUPPORT
 import React from 'react';
 
-// NOTE: Ensure Dashboard.css is imported in a parent component (like Dashboard.js) 
-// or import it here if you want this component to be fully self-contained.
-
-const StudyTaskCard = ({ id, title, subject, difficulty, dueTime, isCompleted, onToggleComplete, onViewDetails }) => {
+const StudyTaskCard = ({ 
+    id, 
+    title, 
+    subject, 
+    difficulty, 
+    dueTime, 
+    isCompleted, 
+    onToggleComplete, 
+    onViewDetails, 
+    taskType,
+    description 
+}) => {
     
-    // Determine the border color based on difficulty (matches common color coding)
+    // Determine the border color based on difficulty
     let color;
     switch (difficulty.toLowerCase()) {
         case 'high':
-            color = '#e74c3c'; // Red
+            color = '#e74c3c';
             break;
         case 'mid':
-            color = '#f1c40f'; // Yellow/Orange
+            color = '#f1c40f';
             break;
         case 'easy':
         default:
-            color = '#2ecc71'; // Green
+            color = '#2ecc71';
             break;
     }
 
-    const statusText = isCompleted ? '✅ Completed' : `Due ${dueTime}`;
+    // Determine task type styling
+    const getTaskTypeClass = () => {
+        switch (taskType) {
+            case 'review_task': return 'review-task';
+            case 'practice_task': return 'practice-task';
+            case 'quiz_task': return 'quiz-task';
+            case 'calendar_task': return 'calendar-task';
+            default: return 'regular-task';
+        }
+    };
+
+    const getTaskTypeLabel = () => {
+        switch (taskType) {
+            case 'review_task': return 'Review';
+            case 'practice_task': return 'Practice';
+            case 'quiz_task': return 'Assessment';
+            case 'calendar_task': return 'Scheduled';
+            default: return 'Task';
+        }
+    };
+
+    const statusText = isCompleted ? 'Completed' : `Due ${dueTime}`;
 
     return (
         <div 
-            className={`task-card ${isCompleted ? 'completed' : ''}`}
-            // Apply the color via inline style to control the left border
+            className={`task-card ${isCompleted ? 'completed' : ''} ${getTaskTypeClass()}`}
             style={{ borderLeftColor: color }}
         >
             <div className="task-header">
-                {/* Task Title */}
+                <div className="task-type-badge">
+                    {getTaskTypeLabel()}
+                </div>
+                
                 <p className="task-title" onClick={() => onViewDetails(id)}>
                     {title}
                 </p>
                 
-                {/* Tags for Subject and Difficulty */}
+                {description && (
+                    <p className="task-description">
+                        {description}
+                    </p>
+                )}
+                
                 <div className="task-tags">
                     <span className="tag subject-tag">{subject}</span>
-                    <span className={`tag difficulty-tag tag-${difficulty.toLowerCase()}`}>{difficulty}</span>
+                    <span className={`tag difficulty-tag tag-${difficulty.toLowerCase()}`}>
+                        {difficulty}
+                    </span>
                 </div>
             </div>
 
             <div className="task-footer">
                 <span className="task-status">{statusText}</span>
 
-                {/* Completion Toggle */}
                 <button 
                     onClick={() => onToggleComplete(id)}
                     className={`toggle-button ${isCompleted ? 'completed' : 'pending'}`}
                 >
-                    {isCompleted ? 'Undo' : 'Done'}
+                    {isCompleted ? 'Undo' : 'Complete'}
                 </button>
             </div>
         </div>

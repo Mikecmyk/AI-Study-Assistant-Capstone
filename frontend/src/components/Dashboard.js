@@ -1,4 +1,4 @@
-// Dashboard.js - OPTIMIZED USER FLOW + CALENDAR-TASKS INTEGRATION + SMART REMINDERS + AI RECOMMENDATIONS
+// Dashboard.js - UPDATED WITH SMART TASK GENERATION
 import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api'; 
 import StudyTools from './StudyTools';
@@ -39,6 +39,74 @@ const saveToStudyHistory = (topic, duration, content, type = 'study_plan') => {
     localStorage.setItem('studyHistory', JSON.stringify(updatedHistory));
 };
 
+// Generate tasks from study history
+const generateTasksFromStudyHistory = () => {
+    const studyHistory = JSON.parse(localStorage.getItem('studyHistory') || '[]');
+    const recentSessions = studyHistory.slice(0, 10);
+    
+    const generatedTasks = recentSessions.map(session => {
+        const baseTopic = session.topic.split(':')[0];
+        const daysAgo = Math.floor((new Date() - new Date(session.timestamp)) / (1000 * 60 * 60 * 24));
+        
+        return {
+            id: `review-${session.id}`,
+            title: `Review: ${session.topic}`,
+            subject: baseTopic,
+            difficulty: daysAgo > 7 ? 'High' : daysAgo > 3 ? 'Mid' : 'Easy',
+            dueTime: getReviewDueDate(daysAgo),
+            isCompleted: false,
+            type: 'review_task',
+            originalSessionId: session.id,
+            priority: calculateReviewPriority(session, daysAgo)
+        };
+    });
+    
+    return generatedTasks;
+};
+
+const getReviewDueDate = (daysAgo) => {
+    if (daysAgo > 7) return 'ASAP';
+    if (daysAgo > 3) return 'Next 2 days';
+    return 'This week';
+};
+
+const calculateReviewPriority = (session, daysAgo) => {
+    const duration = parseInt(session.duration) || 0;
+    const contentLength = session.content?.length || 0;
+    
+    let priority = daysAgo * 2;
+    priority += duration > 60 ? 3 : 1;
+    priority += contentLength > 500 ? 2 : 0;
+    
+    return Math.min(priority, 10);
+};
+
+// Generate follow-up tasks after study sessions
+const generateFollowUpTasks = (topic, duration, content) => {
+    return [
+        {
+            id: `practice-${Date.now()}`,
+            title: `Practice Exercises: ${topic}`,
+            subject: topic.split(':')[0],
+            difficulty: 'Mid',
+            dueTime: 'Tomorrow',
+            isCompleted: false,
+            type: 'practice_task',
+            description: `Apply concepts from your ${duration} study session`
+        },
+        {
+            id: `quiz-${Date.now() + 1}`,
+            title: `Self Assessment: ${topic}`,
+            subject: topic.split(':')[0],
+            difficulty: 'Mid',
+            dueTime: 'In 2 days',
+            isCompleted: false,
+            type: 'quiz_task',
+            description: 'Test your understanding of key concepts'
+        }
+    ];
+};
+
 function Dashboard({ logout }) {
     const [topics, setTopics] = useState([]);
     const [tasks, setTasks] = useState([]);
@@ -54,6 +122,7 @@ function Dashboard({ logout }) {
     const [copySuccess, setCopySuccess] = useState('');
     const [activeSection, setActiveSection] = useState('productivity');
     const [notificationPermission, setNotificationPermission] = useState('default');
+    const [activeTaskFilter, setActiveTaskFilter] = useState('all');
 
     const handleTopicAdded = (newTopic) => {
         console.log('New topic added:', newTopic);
@@ -75,7 +144,16 @@ function Dashboard({ logout }) {
             !calendarTasks.some(calTask => calTask.title === mockTask.title)
         );
         
-        const allTasks = [...calendarTasks, ...mockTasks];
+        // Generate tasks from study history
+        const studyBasedTasks = generateTasksFromStudyHistory();
+        
+        // Combine all tasks and remove duplicates
+        const allTasks = [...calendarTasks, ...mockTasks, ...studyBasedTasks]
+            .filter((task, index, self) => 
+                index === self.findIndex(t => t.id === task.id)
+            )
+            .sort((a, b) => (b.priority || 0) - (a.priority || 0));
+        
         setTasks(allTasks);
     }, []);
 
@@ -272,6 +350,15 @@ function Dashboard({ logout }) {
             recordStudyProgress(specificArea, 'study_plan');
             saveToStudyHistory(selectedTopic, duration, generatedContentText, 'study_plan');
             
+            // Generate follow-up tasks after study session
+            const followUpTasks = generateFollowUpTasks(selectedTopic, duration, generatedContentText);
+            setTasks(prevTasks => {
+                const newTasks = [...followUpTasks, ...prevTasks];
+                return newTasks.filter((task, index, self) => 
+                    index === self.findIndex(t => t.id === task.id)
+                );
+            });
+            
             setTimeout(() => {
                 document.querySelector('.generated-content')?.scrollIntoView({ behavior: 'smooth' });
             }, 500);
@@ -320,7 +407,7 @@ function Dashboard({ logout }) {
                 alert(`Study Session: ${task.title}\nSubject: ${task.subject}\nDue: ${task.dueTime}`);
             }
         } else {
-            alert(`Navigating to details for Task ID: ${id}`);
+            alert(`Task Details:\n\nTitle: ${task.title}\nSubject: ${task.subject}\nDifficulty: ${task.difficulty}\nDue: ${task.dueTime}\nType: ${task.type || 'Regular Task'}\n${task.description ? `Description: ${task.description}` : ''}`);
         }
     };
 
@@ -329,6 +416,18 @@ function Dashboard({ logout }) {
         setRefreshTopics(prev => !prev);
         alert('Old topics cleared! Refreshing topics list...');
     };
+
+    // Filter tasks based on active filter
+    const filteredTasks = tasks.filter(task => {
+        if (activeTaskFilter === 'all') return true;
+        if (activeTaskFilter === 'review') return task.type === 'review_task';
+        if (activeTaskFilter === 'practice') return task.type === 'practice_task';
+        if (activeTaskFilter === 'quiz') return task.type === 'quiz_task';
+        if (activeTaskFilter === 'calendar') return task.eventId;
+        return !task.type && !task.eventId;
+    });
+
+    const incompleteTasksCount = filteredTasks.filter(t => !t.isCompleted).length;
 
     if (isLoading) {
         return <div className="dashboard-container">Loading Dashboard...</div>;
@@ -339,7 +438,6 @@ function Dashboard({ logout }) {
     }
 
     const availableSubtopics = getAvailableSubtopics();
-    const incompleteTasksCount = tasks.filter(t => !t.isCompleted).length;
 
     return (
         <div className="dashboard-container">
@@ -405,27 +503,62 @@ function Dashboard({ logout }) {
                         
                         <div className="urgent-tasks dashboard-card">
                             <div className="tasks-header">
-                                <h3>Urgent Tasks ({incompleteTasksCount})</h3>
-                                <small>Includes calendar study sessions + regular tasks</small>
+                                <h3>Learning Tasks ({incompleteTasksCount})</h3>
+                                <small>Calendar sessions + Regular tasks + Smart reviews</small>
                             </div>
+                            
+                            <div className="task-categories">
+                                <button 
+                                    className={`category-filter ${activeTaskFilter === 'all' ? 'active' : ''}`}
+                                    onClick={() => setActiveTaskFilter('all')}
+                                >
+                                    All Tasks
+                                </button>
+                                <button 
+                                    className={`category-filter ${activeTaskFilter === 'review' ? 'active' : ''}`}
+                                    onClick={() => setActiveTaskFilter('review')}
+                                >
+                                    Review Tasks
+                                </button>
+                                <button 
+                                    className={`category-filter ${activeTaskFilter === 'practice' ? 'active' : ''}`}
+                                    onClick={() => setActiveTaskFilter('practice')}
+                                >
+                                    Practice Tasks
+                                </button>
+                                <button 
+                                    className={`category-filter ${activeTaskFilter === 'quiz' ? 'active' : ''}`}
+                                    onClick={() => setActiveTaskFilter('quiz')}
+                                >
+                                    Self Assessments
+                                </button>
+                                <button 
+                                    className={`category-filter ${activeTaskFilter === 'calendar' ? 'active' : ''}`}
+                                    onClick={() => setActiveTaskFilter('calendar')}
+                                >
+                                    Calendar Sessions
+                                </button>
+                            </div>
+                            
                             <div className="task-cards-container">
-                                {tasks.length > 0 ? (
-                                    tasks.map(task => (
+                                {filteredTasks.length > 0 ? (
+                                    filteredTasks.map(task => (
                                         <StudyTaskCard
                                             key={task.id}
                                             {...task}
                                             onToggleComplete={handleToggleComplete}
                                             onViewDetails={handleViewDetails}
+                                            taskType={task.type || 'regular'}
                                         />
                                     ))
                                 ) : (
                                     <div className="no-tasks">
-                                        <p>No urgent tasks! Add study sessions to your calendar or create new tasks.</p>
+                                        <p>No tasks found! Complete a study session to generate review tasks.</p>
                                         <button 
                                             onClick={() => setActiveSection('study')}
                                             className="add-tasks-btn"
                                         >
-                                            Plan Study Session
+                                            Start Studying
                                         </button>
                                     </div>
                                 )}
