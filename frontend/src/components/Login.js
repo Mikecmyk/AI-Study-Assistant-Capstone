@@ -31,15 +31,29 @@ function Login({ onLoginSuccess }) {
             console.log('Login response data:', response.data);
 
             const data = response.data;
-            const authToken = data.token || data.key;
-
+            const authToken = data.token;
+            
             if (!authToken) {
                 throw new Error("No authentication token received from server");
             }
 
+            // Create complete user data object with role information
+            const userData = {
+                token: authToken,
+                id: data.user_id,
+                email: data.email,
+                username: data.username,
+                is_staff: data.is_staff || false,
+                is_superuser: data.is_superuser || false
+            };
+
+            // Store token and user data
             localStorage.setItem('token', authToken);
+            localStorage.setItem('user', JSON.stringify(userData));
+
+            // Call the success handler with complete user data
             if (onLoginSuccess) {
-                onLoginSuccess(authToken);
+                onLoginSuccess(userData);
             }
 
         } catch (error) {
@@ -53,6 +67,8 @@ function Login({ onLoginSuccess }) {
                     setError("Invalid credentials. Please try again.");
                 } else if (status === 400 && errorData.non_field_errors) {
                     setError(errorData.non_field_errors[0]);
+                } else if (status === 400 && errorData.error) {
+                    setError(errorData.error);
                 } else {
                     setError(errorData.detail || errorData.message || `Login failed (Status: ${status})`);
                 }

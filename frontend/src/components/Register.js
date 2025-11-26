@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
-import './Dashboard.css'; 
+import api from '../api';
+import './Dashboard.css';
 
 function Register() {
     const [formData, setFormData] = useState({
@@ -11,7 +12,7 @@ function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState(''); 
+    const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     
     const navigate = useNavigate();
@@ -48,54 +49,51 @@ function Register() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/auth/register/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password, username: email }),
+            const response = await api.post('/auth/register/', {
+                email, 
+                password, 
+                username: email 
             });
 
-            let data = {};
-            try {
-                data = await response.json();
-            } catch (jsonError) {
-                console.warn("Could not parse response as JSON.");
-            }
-
             console.log('Register response status:', response.status);
-            console.log('Register response data:', data);
+            console.log('Register response data:', response.data);
 
-            if (!response.ok) {
-                let errorMessage = 'Registration failed due to server error.';
-                
-                if (response.status === 400) {
-                    const errorDetail = data.email?.[0] || data.username?.[0] || data.password?.[0];
-                    if (errorDetail) {
-                        errorMessage = errorDetail;
-                    } else if (data.detail || data.message) {
-                        errorMessage = data.detail || data.message;
-                    } else if (data.non_field_errors) {
-                        errorMessage = data.non_field_errors[0];
-                    } else {
-                        errorMessage = `Registration failed with status: ${response.status}`;
-                    }
-                } else {
-                     errorMessage = `Registration failed with status: ${response.status}`;
-                }
-                
-                throw new Error(errorMessage);
-            }
+            const data = response.data;
 
-            setSuccessMessage("Success! Your account has been created. Redirecting to login...");
+            setSuccessMessage("Success! Your account is created. Redirecting to login...");
             
             setTimeout(() => {
                 navigate('/login');
-            }, 2000); 
+            }, 1000);
 
         } catch (error) {
-            console.error("Registration attempt failed:", error.message);
-            setError(error.message);
+            console.error("Registration attempt failed:", error);
+            
+            if (error.response) {
+                const status = error.response.status;
+                const errorData = error.response.data;
+                
+                if (status === 400) {
+                    const errorDetail = errorData.email?.[0] || errorData.username?.[0] || errorData.password?.[0];
+                    if (errorDetail) {
+                        setError(errorDetail);
+                    } else if (errorData.detail || errorData.message) {
+                        setError(errorData.detail || errorData.message);
+                    } else if (errorData.non_field_errors) {
+                        setError(errorData.non_field_errors[0]);
+                    } else {
+                        setError(`Registration failed with status: ${status}`);
+                    }
+                } else {
+                    setError(`Registration failed with status: ${status}`);
+                }
+            } else if (error.request) {
+                setError("Cannot connect to server. Please check your connection.");
+            } else {
+                setError(error.message || "An unexpected error occurred");
+            }
         } finally {
-            setIsLoading(false); 
+            setIsLoading(false);
         }
     };
 

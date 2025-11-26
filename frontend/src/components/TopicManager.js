@@ -62,21 +62,53 @@ function TopicManager({ onTopicAdded }) {
     const [specificTopic, setSpecificTopic] = useState('');
     const [customTopic, setCustomTopic] = useState('');
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+
+    const getCurrentUserId = () => {
+        try {
+            const userData = localStorage.getItem('user');
+            if (!userData) return 'anonymous';
+            
+            try {
+                const user = JSON.parse(userData);
+                return user.id || user.user_id || 'anonymous';
+            } catch (e) {
+                return userData;
+            }
+        } catch (error) {
+            console.error('Error getting user ID:', error);
+            return 'anonymous';
+        }
+    };
 
     const saveTopicToStorage = (topicObject) => {
-        const storedTopics = localStorage.getItem('temporaryTopics');
+        const userId = getCurrentUserId();
+        const storageKey = `temporaryTopics_${userId}`;
+        
+        const storedTopics = localStorage.getItem(storageKey);
         const existingTopics = storedTopics ? JSON.parse(storedTopics) : [];
         
-        const updatedTopics = [...existingTopics, topicObject];
+        // Check if topic already exists to avoid duplicates
+        const topicExists = existingTopics.some(topic => 
+            topic.name === topicObject.name
+        );
         
-        localStorage.setItem('temporaryTopics', JSON.stringify(updatedTopics));
+        if (topicExists) {
+            setError("This topic already exists!");
+            return false;
+        }
+        
+        const updatedTopics = [...existingTopics, topicObject];
+        localStorage.setItem(storageKey, JSON.stringify(updatedTopics));
         
         console.log('Saved topic to localStorage:', topicObject);
         console.log('All stored topics:', updatedTopics);
+        return true;
     };
 
     const handleAddTopic = () => {
         setError('');
+        setSuccessMessage('');
         
         if (selectedSubject && specificTopic) {
             const fullTopic = `${selectedSubject}: ${specificTopic}`;
@@ -89,15 +121,25 @@ function TopicManager({ onTopicAdded }) {
                 isCustom: true
             };
             
-            saveTopicToStorage(topicObject);
+            const saved = saveTopicToStorage(topicObject);
             
-            onTopicAdded(topicObject);
-            
-            setSelectedSubject('');
-            setSpecificTopic('');
-            setCustomTopic('');
-            
-            alert(`Topic "${fullTopic}" added successfully!`);
+            if (saved) {
+                onTopicAdded(topicObject);
+                
+                setSelectedSubject('');
+                setSpecificTopic('');
+                setCustomTopic('');
+                
+                setSuccessMessage(`Topic "${fullTopic}" added successfully! You can find it under "Select a topic" in your study session.`);
+                
+                // Auto-scroll to study session after a delay
+                setTimeout(() => {
+                    const studySection = document.querySelector('.study-form');
+                    if (studySection) {
+                        studySection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }, 1500);
+            }
             
         } else if (customTopic.trim()) {
             if (customTopic.length < 3) {
@@ -127,40 +169,28 @@ function TopicManager({ onTopicAdded }) {
                 isCustom: true
             };
             
-            saveTopicToStorage(topicObject);
+            const saved = saveTopicToStorage(topicObject);
             
-            onTopicAdded(topicObject);
-            
-            setCustomTopic('');
-            setSelectedSubject('');
-            setSpecificTopic('');
-            
-            alert(`Topic "${topicName}" added successfully!`);
+            if (saved) {
+                onTopicAdded(topicObject);
+                
+                setCustomTopic('');
+                setSelectedSubject('');
+                setSpecificTopic('');
+                
+                setSuccessMessage(`Topic "${topicName}" added successfully! You can find it under "Select a topic" in your study session.`);
+                
+                // Auto-scroll to study session after a delay
+                setTimeout(() => {
+                    const studySection = document.querySelector('.study-form');
+                    if (studySection) {
+                        studySection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }, 1500);
+            }
         } else {
             setError("Please select a topic or enter a custom one");
         }
-    };
-
-    const handleQuickAdd = (subject, topic) => {
-        const fullTopic = `${subject}: ${topic}`;
-        const topicObject = {
-            id: Date.now(),
-            name: fullTopic,
-            subject: subject,
-            specificArea: topic,
-            subtopics: [topic],
-            isCustom: true
-        };
-        
-        saveTopicToStorage(topicObject);
-        
-        onTopicAdded(topicObject);
-        
-        setSelectedSubject('');
-        setSpecificTopic('');
-        setCustomTopic('');
-        
-        alert(`Topic "${fullTopic}" added successfully!`);
     };
 
     return (
@@ -176,6 +206,7 @@ function TopicManager({ onTopicAdded }) {
                         setSelectedSubject(e.target.value);
                         setSpecificTopic('');
                         setError('');
+                        setSuccessMessage('');
                     }}
                     className="topic-select"
                 >
@@ -194,6 +225,7 @@ function TopicManager({ onTopicAdded }) {
                         onChange={(e) => {
                             setSpecificTopic(e.target.value);
                             setError('');
+                            setSuccessMessage('');
                         }}
                         className="topic-select"
                     >
@@ -214,6 +246,7 @@ function TopicManager({ onTopicAdded }) {
                     onChange={(e) => {
                         setCustomTopic(e.target.value);
                         setError('');
+                        setSuccessMessage('');
                     }}
                     className="topic-input"
                 />
@@ -223,32 +256,11 @@ function TopicManager({ onTopicAdded }) {
             </div>
 
             {error && <div className="error-message">{error}</div>}
+            {successMessage && <div className="success-message">{successMessage}</div>}
 
             <button onClick={handleAddTopic} className="add-topic-btn">
                 Add Learning Topic
             </button>
-            
-            <div className="topic-suggestions">
-                <h4>Quick Add Popular Topics:</h4>
-                <div className="quick-topics-grid">
-                    {Object.entries(predefinedSubjects).map(([subject, topics]) => (
-                        <div key={subject} className="subject-group">
-                            <h5>{subject}</h5>
-                            <div className="topic-buttons">
-                                {topics.slice(0, 3).map(topic => (
-                                    <button
-                                        key={topic}
-                                        onClick={() => handleQuickAdd(subject, topic)}
-                                        className="quick-topic-btn"
-                                    >
-                                        {topic}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
 
             <div className="topic-tips">
                 <h4>Tips for Better Learning:</h4>

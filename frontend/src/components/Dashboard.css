@@ -4347,3 +4347,1116 @@
 .productivity-rate tr:nth-child(even) {
     background-color: #f8f9fa;
 }
+
+/* ===== GLOBAL FONT SIZE INCREASE ===== */
+
+/* Increase base font size for better readability */
+:root {
+    font-size: 17px; /* Increased from default 16px */
+}
+
+/* Dashboard container adjustments */
+.dashboard-container {
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+/* Headers - Larger and more prominent */
+.dashboard-card h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.dashboard-card h2 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+}
+
+.dashboard-card h3 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.dashboard-card h4 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+/* Main content text */
+.dashboard-card {
+    font-size: 1.1rem;
+    line-height: 1.7;
+}
+
+/* Task cards and smaller elements */
+.task-card {
+    font-size: 1.05rem;
+}
+
+.task-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.task-detail {
+    font-size: 1rem;
+}
+
+/* Form elements */
+.study-form label {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.study-form select,
+.study-form input[type="text"] {
+    font-size: 1.1rem;
+    padding: 12px 16px;
+}
+
+.study-form button[type="submit"] {
+    font-size: 1.1rem;
+    padding: 14px 20px;
+}
+
+/* Sidebar navigation */
+.sidebar-header {
+    font-size: 2rem;
+}
+
+.nav-link {
+    font-size: 1.15rem;
+    padding: 16px 20px;
+}
+
+.link-icon {
+    font-size: 1.4rem;
+}
+
+/* Generated content */
+.generated-content h3 {
+    font-size: 1.75rem;
+}
+
+.generated-content pre,
+.generated-notes-output,
+.generated-quiz-output {
+    font-size: 1.1rem;
+    line-height: 1.7;
+}
+
+/* Auth pages text size increase */
+.auth-container {
+    font-size: 1.1rem;
+}
+
+.form-title {
+    font-size: 2.5rem;
+}
+
+.form-subtitle {
+    font-size: 1.2rem;
+}
+
+.form-label {
+    font-size: 1.1rem;
+}
+
+.form-input {
+    font-size: 1.1rem;
+    padding: 16px 20px;
+}
+
+.submit-button {
+    font-size: 1.2rem;
+    padding: 18px 24px;
+}
+
+.auth-link {
+    font-size: 1.1rem;
+}
+
+/* Courses page */
+.courses-header h1 {
+    font-size: 3rem;
+}
+
+.courses-header p {
+    font-size: 1.3rem;
+}
+
+.course-title {
+    font-size: 1.4rem;
+}
+
+.course-description {
+    font-size: 1.1rem;
+}
+
+/* Study tools and buttons */
+.tool-btn {
+    font-size: 1.1rem;
+    padding: 14px 20px;
+}
+
+.action-btn {
+    font-size: 1rem;
+    padding: 10px 16px;
+}
+
+/* Markdown content */
+.markdown-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+.markdown-h2 {
+    font-size: 2rem;
+}
+
+.markdown-h3 {
+    font-size: 1.75rem;
+}
+
+.markdown-h4 {
+    font-size: 1.5rem;
+}
+
+.markdown-h5 {
+    font-size: 1.3rem;
+}
+
+.markdown-p {
+    font-size: 1.1rem;
+}
+
+.markdown-li {
+    font-size: 1.1rem;
+}
+
+/* Calendar and schedule */
+.calendar-header h4 {
+    font-size: 1.5rem;
+}
+
+.day-cell {
+    font-size: 1.1rem;
+}
+
+.schedule-event-item {
+    font-size: 1.05rem;
+}
+
+/* History and stats */
+.history-header h3 {
+    font-size: 1.75rem;
+}
+
+.history-topic {
+    font-size: 1.2rem;
+}
+
+.stat-number {
+    font-size: 2.2rem;
+}
+
+.stat-label {
+    font-size: 1rem;
+}
+
+/* AI Tutor chat */
+.tutor-header h3 {
+    font-size: 1.75rem;
+}
+
+.message-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.message-input {
+    font-size: 1.1rem;
+    padding: 16px 20px;
+}
+
+.send-button {
+    font-size: 1.1rem;
+    padding: 16px 24px;
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 768px) {
+    :root {
+        font-size: 16px; /* Slightly smaller on mobile but still readable */
+    }
+    
+    .dashboard-container {
+        font-size: 1rem;
+    }
+    
+    .dashboard-card h1 {
+        font-size: 2rem;
+    }
+    
+    .dashboard-card h2 {
+        font-size: 1.75rem;
+    }
+    
+    .dashboard-card h3 {
+        font-size: 1.5rem;
+    }
+    
+    .form-title {
+        font-size: 2rem;
+    }
+    
+    .courses-header h1 {
+        font-size: 2.25rem;
+    }
+}
+
+/* Additional readability improvements */
+.dashboard-card p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+}
+
+.dashboard-card ul,
+.dashboard-card ol {
+    font-size: 1.1rem;
+    line-height: 1.7;
+}
+
+.dashboard-card li {
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+/* Button text sizes */
+button:not(.action-btn):not(.tool-btn) {
+    font-size: 1.1rem;
+}
+
+/* Table text sizes */
+.productivity-rate th,
+.productivity-rate td {
+    font-size: 1.1rem;
+    padding: 14px 16px;
+}
+
+/* Input placeholder text */
+::placeholder {
+    font-size: 1.1rem;
+}
+
+/* Selection and focus states for better accessibility */
+.dashboard-card *:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Improve contrast for better readability */
+.dashboard-card {
+    color: #2d3748; /* Darker gray for better contrast */
+}
+
+/* Increase spacing for better text separation */
+.dashboard-card > * + * {
+    margin-top: 1rem;
+}
+
+.no-tasks-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.add-tasks-btn.secondary {
+    background-color: #6c757d;
+}
+
+.add-tasks-btn.secondary:hover {
+    background-color: #5a6268;
+}
+
+.insufficient-data {
+    text-align: center;
+    padding: 20px;
+}
+
+.insufficient-data p {
+    margin-bottom: 15px;
+    color: #666;
+}
+
+.start-studying-btn {
+    background-color: #4361ee;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.start-studying-btn:hover {
+    background-color: #3a56d4;
+}
+
+.ai-recommendations-placeholder {
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.ai-recommendations-placeholder h3 {
+    margin-bottom: 15px;
+    color: #4361ee;
+}
+
+.ai-recommendations-placeholder p {
+    margin-bottom: 20px;
+    color: #666;
+    font-size: 16px;
+}
+
+.no-tasks-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    justify-content: center;
+}
+
+.add-tasks-btn.secondary {
+    background-color: #6c757d;
+}
+
+.add-tasks-btn.secondary:hover {
+    background-color: #5a6268;
+}
+
+.insufficient-data {
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.insufficient-data p {
+    margin-bottom: 20px;
+    color: #666;
+    font-size: 16px;
+}
+
+.start-studying-btn {
+    background-color: #4361ee;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.start-studying-btn:hover {
+    background-color: #3a56d4;
+}
+
+
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 12px;
+    border-radius: 4px;
+    border: 1px solid #c3e6cb;
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.topic-manager .success-message {
+    margin-top: 15px;
+}
+
+/* Ensure the topic select dropdown is visible */
+.topic-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Redirect message styles */
+.redirect-message {
+    background-color: #e3f2fd;
+    border: 1px solid #90caf9;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 15px 0;
+    text-align: center;
+}
+
+.redirect-message strong {
+    color: #1976d2;
+    font-size: 16px;
+}
+
+.redirect-message p {
+    margin: 10px 0;
+    color: #555;
+}
+
+.redirect-now-btn {
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+}
+
+.redirect-now-btn:hover {
+    background-color: #1565c0;
+}
+
+.welcome-to-tools {
+    text-align: center;
+    padding: 25px;
+}
+
+.welcome-to-tools h3 {
+    color: #1976d2;
+    margin-bottom: 15px;
+}
+
+.welcome-to-tools p {
+    margin: 8px 0;
+    color: #555;
+}
+
+/* Study Plan Output Styling */
+.study-plan-output.styled-content {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    margin-top: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e1e5e9;
+    line-height: 1.6;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.styled-content .content-header-line {
+    color: #4361ee;
+    font-size: 1.3em;
+    font-weight: 600;
+    margin: 25px 0 15px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #4361ee;
+}
+
+.styled-content .content-header-line:first-child {
+    margin-top: 0;
+}
+
+.styled-content .content-paragraph {
+    margin: 15px 0;
+    color: #2d3748;
+    font-size: 15px;
+    text-align: justify;
+}
+
+.styled-content .content-list-item {
+    display: flex;
+    align-items: flex-start;
+    margin: 12px 0;
+    color: #2d3748;
+    font-size: 15px;
+}
+
+.styled-content .content-list-item .bullet {
+    color: #4361ee;
+    font-weight: bold;
+    margin-right: 12px;
+    font-size: 18px;
+}
+
+.styled-content .content-numbered-item {
+    display: flex;
+    align-items: flex-start;
+    margin: 12px 0;
+    color: #2d3748;
+    font-size: 15px;
+}
+
+.styled-content .content-numbered-item .number {
+    color: #4361ee;
+    font-weight: bold;
+    margin-right: 8px;
+    min-width: 25px;
+}
+
+.styled-content .content-empty-line {
+    height: 8px;
+}
+
+/* Content Header Actions */
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.content-header h3 {
+    color: #2d3748;
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.content-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.copy-btn {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.copy-btn:hover {
+    background-color: #dee2e6;
+}
+
+.download-btn {
+    background-color: #4361ee;
+    color: white;
+}
+
+.download-btn:hover {
+    background-color: #3a56d4;
+}
+
+.pdf-btn {
+    background-color: #f72585;
+    color: white;
+}
+
+.pdf-btn:hover {
+    background-color: #e11575;
+}
+
+/* Success and redirect messages */
+.copy-success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 12px;
+    border-radius: 6px;
+    margin: 15px 0;
+    text-align: center;
+    border: 1px solid #c3e6cb;
+}
+
+.redirect-message {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 12px;
+    margin: 20px 0;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.redirect-message strong {
+    font-size: 1.2em;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.redirect-message p {
+    margin: 10px 0;
+    opacity: 0.9;
+}
+
+.redirect-now-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 15px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.redirect-now-btn:hover {
+    background: white;
+    color: #667eea;
+}
+
+.welcome-to-tools {
+    background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+    color: white;
+    text-align: center;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+}
+
+.welcome-to-tools h3 {
+    color: white;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+}
+
+.welcome-to-tools p {
+    margin: 8px 0;
+    opacity: 0.9;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .content-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .content-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+    
+    .styled-content .content-header-line {
+        font-size: 1.2em;
+    }
+    
+    .study-plan-output.styled-content {
+        padding: 20px;
+    }
+}
+
+/* Make it match the StudyTools styling */
+.study-plan-output.styled-content {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+}
+
+.styled-content .content-header-line {
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 700;
+}
+
+.styled-content .content-paragraph {
+    line-height: 1.7;
+    color: #4a5568;
+}
+
+.styled-content .content-list-item,
+.styled-content .content-numbered-item {
+    background: #f8f9fa;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin: 10px 0;
+    border-left: 4px solid #4361ee;
+}
+
+
+/* Simple Bar Chart Styles */
+.simple-bar-chart {
+  padding: 20px;
+}
+
+.chart-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #2d3748;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.bars-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 200px;
+  gap: 10px;
+}
+
+.bar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.bar-label {
+  font-size: 12px;
+  color: #718096;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.bar-wrapper {
+  height: 150px;
+  width: 30px;
+  background-color: #f7fafc;
+  border-radius: 4px;
+  display: flex;
+  align-items: flex-end;
+  position: relative;
+}
+
+.bar-fill {
+  width: 100%;
+  border-radius: 4px;
+  transition: height 0.3s ease;
+  min-height: 4px;
+}
+
+.bar-value {
+  font-size: 12px;
+  font-weight: bold;
+  color: #2d3748;
+  margin-top: 8px;
+}
+
+.chart-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+  padding: 0 20px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  font-size: 12px;
+  color: #718096;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  display: block;
+  font-size: 24px;
+  font-weight: bold;
+  color: #4361ee;
+}
+
+.no-data-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: #718096;
+}
+
+.no-data-message p {
+  margin: 0;
+  font-size: 14px;
+}
+
+
+/* Dashboard Layout */
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+    background: #f5f7fa;
+}
+
+.sidebar {
+    width: 250px;
+    background: white;
+    color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+    overflow-x: hidden;
+}
+
+/* Two-column layout for Productivity section */
+.section-content.productivity-content {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    align-items: start;
+}
+
+.main-content-area {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0; /* Prevents overflow */
+}
+
+.sidebar-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+}
+
+/* Achievements Styles - Fixed */
+.achievements-container {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e1e5e9;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.achievements-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e8ecef;
+}
+
+.achievements-header h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.progress-ring {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4361ee, #3a56d4);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+    box-shadow: 0 2px 8px rgba(67, 97, 238, 0.3);
+}
+
+.achievements-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.achievement-card {
+    display: flex;
+    align-items: flex-start;
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid #e8ecef;
+    background: white;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.achievement-card.earned {
+    background: linear-gradient(135deg, #f8f9ff, #f0f4ff);
+    border-color: #4361ee;
+    box-shadow: 0 2px 8px rgba(67, 97, 238, 0.1);
+}
+
+.achievement-card.locked {
+    background: #fafbfc;
+    border-color: #e8ecef;
+}
+
+.achievement-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.achievement-icon {
+    font-size: 1.3rem;
+    margin-right: 14px;
+    font-weight: 700;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.achievement-card.earned .achievement-icon {
+    color: #4361ee;
+}
+
+.achievement-card.locked .achievement-icon {
+    color: #bdc3c7;
+}
+
+.achievement-info {
+    flex: 1;
+    min-width: 0; /* Prevents text overflow */
+}
+
+.achievement-info h4 {
+    margin: 0 0 6px 0;
+    font-size: 0.9rem;
+    color: #2c3e50;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.achievement-info p {
+    margin: 0 0 12px 0;
+    font-size: 0.78rem;
+    color: #7f8c8d;
+    line-height: 1.4;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #ecf0f1;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4361ee, #5a72e9);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+.achievement-card.locked .progress-fill {
+    background: #bdc3c7;
+}
+
+.progress-text {
+    font-size: 0.72rem;
+    color: #7f8c8d;
+    font-weight: 500;
+    display: block;
+}
+
+.achievement-card.earned .progress-text {
+    color: #4361ee;
+    font-weight: 600;
+}
+
+/* Dashboard Cards Consistency */
+.dashboard-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e1e5e9;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Ensure Schedule Calendar fits properly */
+.sidebar-content .dashboard-card:last-child {
+    margin-bottom: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .section-content.productivity-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .sidebar-content {
+        position: static;
+        order: -1; /* Move sidebar content above main content on mobile */
+    }
+    
+    .achievements-container {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        position: static;
+    }
+    
+    .main-content {
+        padding: 15px;
+    }
+    
+    .section-content.productivity-content {
+        gap: 16px;
+    }
+    
+    .achievement-card {
+        padding: 14px;
+    }
+    
+    .achievements-header h3 {
+        font-size: 1rem;
+    }
+}
+
+/* Fix for task cards and other content */
+.urgent-tasks {
+    width: 100%;
+}
+
+.productivity-chart {
+    width: 100%;
+}
+
+.study-history {
+    width: 100%;
+}
+
+/* Ensure no horizontal scroll */
+.main-content {
+    overflow-x: hidden;
+}
+
+.section-content {
+    max-width: 100%;
+}
+

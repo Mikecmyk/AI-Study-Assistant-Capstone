@@ -9,22 +9,20 @@ import StudyHistory from './StudyHistory';
 import DocumentUpload from './DocumentUpload';
 import AITutor from './AITutor';
 import AIRecommendations from './AIRecommendations';
+import Achievements from './Achievements';
 import { recordStudyProgress } from './ProductivityChart';
 import './Dashboard.css'; 
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
-// Get current user ID for data isolation - FIXED VERSION
 const getCurrentUserId = () => {
   try {
     const userData = localStorage.getItem('user');
     if (!userData) return 'anonymous';
     
-    // Try to parse as JSON first
     try {
       const user = JSON.parse(userData);
       return user.id || user.user_id || 'anonymous';
     } catch (e) {
-      // If it's not JSON, return the string directly or a hash of it
       return userData;
     }
   } catch (error) {
@@ -33,12 +31,18 @@ const getCurrentUserId = () => {
   }
 };
 
-const MOCK_TASKS = [
-    { id: 1, title: 'Review key Quantum Concepts', subject: 'Physics', difficulty: 'High', dueTime: 'Today, 5 PM', isCompleted: false },
-    { id: 2, title: 'Practice Grammar Exercises', subject: 'English', difficulty: 'Mid', dueTime: 'Tomorrow, 10 AM', isCompleted: false },
-    { id: 3, title: 'Read Chapter 4 Summary', subject: 'History', difficulty: 'Easy', dueTime: 'Sep 15', isCompleted: false },
-    { id: 4, title: 'Start Python Project', subject: 'Programming', difficulty: 'High', dueTime: 'Sep 20', isCompleted: true },
-];
+const safeJSONParse = (data, defaultValue = []) => {
+  try {
+    if (!data || data === 'null' || data === 'undefined') {
+      return defaultValue;
+    }
+    const parsed = JSON.parse(data);
+    return parsed || defaultValue;
+  } catch (error) {
+    console.warn('JSON parse error, returning default:', error);
+    return defaultValue;
+  }
+};
 
 const saveToStudyHistory = (topic, duration, content, type = 'study_plan') => {
     const userId = getCurrentUserId();
@@ -54,17 +58,20 @@ const saveToStudyHistory = (topic, duration, content, type = 'study_plan') => {
     };
     
     const storageKey = `studyHistory_${userId}`;
-    const existingHistory = localStorage.getItem(storageKey);
-    const history = existingHistory ? JSON.parse(existingHistory) : [];
-    const updatedHistory = [studySession, ...history].slice(0, 50);
+    const existingHistory = safeJSONParse(localStorage.getItem(storageKey), []);
+    const updatedHistory = [studySession, ...existingHistory].slice(0, 50);
     localStorage.setItem(storageKey, JSON.stringify(updatedHistory));
 };
 
-// Generate tasks from study history
 const generateTasksFromStudyHistory = () => {
     const userId = getCurrentUserId();
     const storageKey = `studyHistory_${userId}`;
-    const studyHistory = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    const studyHistory = safeJSONParse(localStorage.getItem(storageKey), []);
+    
+    if (studyHistory.length === 0) {
+        return [];
+    }
+    
     const recentSessions = studyHistory.slice(0, 10);
     
     const generatedTasks = recentSessions.map(session => {
@@ -104,7 +111,6 @@ const calculateReviewPriority = (session, daysAgo) => {
     return Math.min(priority, 10);
 };
 
-// Generate follow-up tasks after study sessions
 const generateFollowUpTasks = (topic, duration, content) => {
     return [
         {
@@ -131,6 +137,7 @@ const generateFollowUpTasks = (topic, duration, content) => {
 };
 
 function Dashboard({ logout }) {
+    const navigate = useNavigate();
     const [topics, setTopics] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -146,6 +153,13 @@ function Dashboard({ logout }) {
     const [activeSection, setActiveSection] = useState('productivity');
     const [notificationPermission, setNotificationPermission] = useState('default');
     const [activeTaskFilter, setActiveTaskFilter] = useState('all');
+    const [hasStudyHistory, setHasStudyHistory] = useState(false);
+    const [showStudyToolsRedirect, setShowStudyToolsRedirect] = useState(false);
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
 
     const handleTopicAdded = (newTopic) => {
         console.log('New topic added:', newTopic);
@@ -156,33 +170,67 @@ function Dashboard({ logout }) {
         setActiveSection('study');
         
         setTimeout(() => {
-            alert(`Topic "${topicName}" added! Now generate your study plan.`);
-        }, 300);
+            const studySection = document.querySelector('.study-form');
+            if (studySection) {
+                studySection.scrollIntoView({ behavior: 'smooth' });
+            }
+        }, 500);
     };
+
+    const checkStudyHistory = useCallback(() => {
+        const userId = getCurrentUserId();
+        const storageKey = `studyHistory_${userId}`;
+        const studyHistory = safeJSONParse(localStorage.getItem(storageKey), []);
+        return studyHistory.length > 0;
+    }, []);
 
     const loadAllTasks = useCallback(() => {
         const userId = getCurrentUserId();
+        
         const calendarStorageKey = `calendarTasks_${userId}`;
-        const calendarTasks = JSON.parse(localStorage.getItem(calendarStorageKey) || '[]');
+        const calendarTasks = safeJSONParse(localStorage.getItem(calendarStorageKey), []);
         
-        const mockTasks = MOCK_TASKS.filter(mockTask => 
-            !calendarTasks.some(calTask => calTask.title === mockTask.title)
-        );
+        const eventsStorageKey = `studyEvents_${userId}`;
+        const studyEvents = safeJSONParse(localStorage.getItem(eventsStorageKey), []);
         
-        // Generate tasks from study history
-        const studyBasedTasks = generateTasksFromStudyHistory();
+        const eventTasks = studyEvents.map(event => ({
+            id: `event-${event.id}`,
+            title: event.title || `Study: ${event.topic}`,
+            subject: event.topic || 'General',
+            difficulty: event.priority === 'high' ? 'High' : event.priority === 'medium' ? 'Mid' : 'Easy',
+            dueTime: new Date(event.date).toLocaleDateString(),
+            isCompleted: event.completed || false,
+            type: 'calendar_task',
+            eventId: event.id,
+            description: event.description,
+            date: event.date,
+            time: event.time,
+            duration: event.duration
+        }));
         
-        // Combine all tasks and remove duplicates
-        const allTasks = [...calendarTasks, ...mockTasks, ...studyBasedTasks]
+        let studyBasedTasks = [];
+        const userHasHistory = checkStudyHistory();
+        if (userHasHistory) {
+            studyBasedTasks = generateTasksFromStudyHistory();
+        }
+        
+        const allTasks = [...calendarTasks, ...eventTasks, ...studyBasedTasks]
             .filter((task, index, self) => 
                 index === self.findIndex(t => t.id === task.id)
             )
-            .sort((a, b) => (b.priority || 0) - (a.priority || 0));
+            .sort((a, b) => {
+                if (a.isCompleted !== b.isCompleted) {
+                    return a.isCompleted ? 1 : -1;
+                }
+                return (b.priority || 0) - (a.priority || 0);
+            });
         
         setTasks(allTasks);
-    }, []);
+    }, [checkStudyHistory]);
 
     useEffect(() => {
+        const userHasHistory = checkStudyHistory();
+        setHasStudyHistory(userHasHistory);
         loadAllTasks();
         
         const interval = setInterval(loadAllTasks, 30000);
@@ -191,8 +239,11 @@ function Dashboard({ logout }) {
             setNotificationPermission(Notification.permission);
         }
         
-        return () => clearInterval(interval);
-    }, [loadAllTasks]);
+        return () => {
+            clearInterval(interval);
+            setTasks([]);
+        };
+    }, [loadAllTasks, checkStudyHistory]);
 
     const requestNotificationPermission = () => {
         if ("Notification" in window) {
@@ -294,9 +345,14 @@ function Dashboard({ logout }) {
             
             const userId = getCurrentUserId();
             const storageKey = `temporaryTopics_${userId}`;
-            const storedTempTopics = localStorage.getItem(storageKey);
-            const tempTopics = storedTempTopics ? JSON.parse(storedTempTopics) : [];
+            const tempTopics = safeJSONParse(localStorage.getItem(storageKey), []);
             const allTopics = [...apiTopics, ...tempTopics];
+            
+            console.log('Loaded topics:', {
+                fromApi: apiTopics.length,
+                fromLocal: tempTopics.length,
+                total: allTopics.length
+            });
             
             setTopics(allTopics);
 
@@ -332,8 +388,8 @@ function Dashboard({ logout }) {
         }
         
         if (selectedTopic.includes(': ')) {
-            const [mainSubject, specificArea] = selectedTopic.split(': ');
-            return [specificArea];
+            const [mainSubject] = selectedTopic.split(': ');
+            return [mainSubject];
         }
         
         return [selectedTopic];
@@ -356,16 +412,20 @@ function Dashboard({ logout }) {
 
         try {
             const topicParts = selectedTopic.split(': ');
-            const mainSubject = topicParts[0];
             const specificArea = topicParts[1] || topicParts[0];
             const finalSubtopics = selectedSubtopics.length > 0 ? selectedSubtopics : [specificArea];
 
-            console.log('Generating study plan for:', { topic: selectedTopic, mainSubject, specificArea, subtopics: finalSubtopics, duration });
+            console.log('Generating study plan for:', { 
+                topic: selectedTopic, 
+                specificArea, 
+                subtopics: finalSubtopics, 
+                duration 
+            });
 
             const response = await api.post('/sessions/', {
                 topic_name: selectedTopic,
                 duration_input: duration,
-                main_subject: mainSubject,
+                main_subject: topicParts[0],
                 specific_area: specificArea,
                 subtopics: finalSubtopics,
                 prompt_type: 'focused_study_plan'
@@ -377,7 +437,8 @@ function Dashboard({ logout }) {
             recordStudyProgress(specificArea, 'study_plan');
             saveToStudyHistory(selectedTopic, duration, generatedContentText, 'study_plan');
             
-            // Generate follow-up tasks after study session
+            setHasStudyHistory(true);
+            
             const followUpTasks = generateFollowUpTasks(selectedTopic, duration, generatedContentText);
             setTasks(prevTasks => {
                 const newTasks = [...followUpTasks, ...prevTasks];
@@ -386,9 +447,27 @@ function Dashboard({ logout }) {
                 );
             });
             
+            setShowStudyToolsRedirect(true);
+            
+            setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('studySessionCompleted'));
+            }, 1000);
+            
             setTimeout(() => {
                 document.querySelector('.generated-content')?.scrollIntoView({ behavior: 'smooth' });
             }, 500);
+
+            setTimeout(() => {
+                setActiveSection('tools');
+                setShowStudyToolsRedirect(false);
+                
+                setTimeout(() => {
+                    const studyToolsSection = document.querySelector('.ai-study-tools');
+                    if (studyToolsSection) {
+                        studyToolsSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }, 300);
+            }, 5000);
             
         } catch (err) {
             console.error("Error generating session:", err.response ? err.response.data : err);
@@ -409,18 +488,34 @@ function Dashboard({ logout }) {
         );
         
         const task = tasks.find(t => t.id === id);
-        if (task && task.eventId) {
-            console.log(`Calendar task "${task.title}" marked as ${task.isCompleted ? 'incomplete' : 'completed'}`);
-            
+        if (task) {
             const userId = getCurrentUserId();
-            const storageKey = `studyEvents_${userId}`;
-            const events = JSON.parse(localStorage.getItem(storageKey) || '[]');
-            const updatedEvents = events.map(event => 
-                event.id === task.eventId 
-                    ? { ...event, completed: !task.isCompleted }
-                    : event
-            );
-            localStorage.setItem(storageKey, JSON.stringify(updatedEvents));
+            
+            if (task.eventId) {
+                const eventsStorageKey = `studyEvents_${userId}`;
+                const events = safeJSONParse(localStorage.getItem(eventsStorageKey), []);
+                const updatedEvents = events.map(event => 
+                    event.id === task.eventId 
+                        ? { ...event, completed: !task.isCompleted }
+                        : event
+                );
+                localStorage.setItem(eventsStorageKey, JSON.stringify(updatedEvents));
+            }
+            
+            if (task.type === 'calendar_task') {
+                const calendarStorageKey = `calendarTasks_${userId}`;
+                const calendarTasks = safeJSONParse(localStorage.getItem(calendarStorageKey), []);
+                const updatedCalendarTasks = calendarTasks.map(calTask => 
+                    calTask.id === task.id 
+                        ? { ...calTask, isCompleted: !task.isCompleted }
+                        : calTask
+                );
+                localStorage.setItem(calendarStorageKey, JSON.stringify(updatedCalendarTasks));
+            }
+
+            if (task.isCompleted === false) {
+                recordStudyProgress(task.subject || task.title, 'task_completed');
+            }
         }
     };
 
@@ -429,7 +524,7 @@ function Dashboard({ logout }) {
         if (task && task.eventId) {
             const userId = getCurrentUserId();
             const storageKey = `studyEvents_${userId}`;
-            const events = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            const events = safeJSONParse(localStorage.getItem(storageKey), []);
             const event = events.find(e => e.id === task.eventId);
             
             if (event) {
@@ -450,16 +545,18 @@ function Dashboard({ logout }) {
         alert('Old topics cleared! Refreshing topics list...');
     };
 
-    // Filter tasks based on active filter
     const filteredTasks = tasks.filter(task => {
         if (activeTaskFilter === 'all') return true;
         if (activeTaskFilter === 'review') return task.type === 'review_task';
         if (activeTaskFilter === 'practice') return task.type === 'practice_task';
         if (activeTaskFilter === 'quiz') return task.type === 'quiz_task';
-        if (activeTaskFilter === 'calendar') return task.eventId;
+        if (activeTaskFilter === 'calendar') return task.type === 'calendar_task' || task.eventId;
         return !task.type && !task.eventId;
     });
 
+    const hasAnyTasks = tasks.length > 0;
+    const userHasCalendarTasks = tasks.some(task => task.type === 'calendar_task' || task.eventId);
+    const userHasReviewTasks = tasks.some(task => task.type === 'review_task');
     const incompleteTasksCount = filteredTasks.filter(t => !t.isCompleted).length;
 
     if (isLoading) {
@@ -481,11 +578,10 @@ function Dashboard({ logout }) {
                 <div className="sidebar-nav-links">
                     <Link to="/dashboard" className="nav-link active">Dashboard</Link>
                     <Link to="/courses" className="nav-link">My Courses</Link>
-                    <Link to="/admin" className="nav-link">Admin Tools</Link>
                 </div>
 
                 <button 
-                    onClick={logout} 
+                    onClick={handleLogout}
                     className="logout-button action-button" 
                     style={{ marginTop: 'auto', alignSelf: 'flex-start' }}
                 >
@@ -525,85 +621,142 @@ function Dashboard({ logout }) {
                 )}
 
                 {activeSection === 'productivity' && (
-                    <div className="section-content">
-                        <div className="dashboard-card">
-                            <AIRecommendations />
-                        </div>
-
-                        <div className="productivity-chart dashboard-card">
-                            <ProductivityChart /> 
-                        </div>
-                        
-                        <div className="urgent-tasks dashboard-card">
-                            <div className="tasks-header">
-                                <h3>Learning Tasks ({incompleteTasksCount})</h3>
-                                <small>Calendar sessions + Regular tasks + Smart reviews</small>
-                            </div>
-                            
-                            <div className="task-categories">
-                                <button 
-                                    className={`category-filter ${activeTaskFilter === 'all' ? 'active' : ''}`}
-                                    onClick={() => setActiveTaskFilter('all')}
-                                >
-                                    All Tasks
-                                </button>
-                                <button 
-                                    className={`category-filter ${activeTaskFilter === 'review' ? 'active' : ''}`}
-                                    onClick={() => setActiveTaskFilter('review')}
-                                >
-                                    Review Tasks
-                                </button>
-                                <button 
-                                    className={`category-filter ${activeTaskFilter === 'practice' ? 'active' : ''}`}
-                                    onClick={() => setActiveTaskFilter('practice')}
-                                >
-                                    Practice Tasks
-                                </button>
-                                <button 
-                                    className={`category-filter ${activeTaskFilter === 'quiz' ? 'active' : ''}`}
-                                    onClick={() => setActiveTaskFilter('quiz')}
-                                >
-                                    Self Assessments
-                                </button>
-                                <button 
-                                    className={`category-filter ${activeTaskFilter === 'calendar' ? 'active' : ''}`}
-                                    onClick={() => setActiveTaskFilter('calendar')}
-                                >
-                                    Calendar Sessions
-                                </button>
-                            </div>
-                            
-                            <div className="task-cards-container">
-                                {filteredTasks.length > 0 ? (
-                                    filteredTasks.map(task => (
-                                        <StudyTaskCard
-                                            key={task.id}
-                                            {...task}
-                                            onToggleComplete={handleToggleComplete}
-                                            onViewDetails={handleViewDetails}
-                                            taskType={task.type || 'regular'}
-                                        />
-                                    ))
-                                ) : (
-                                    <div className="no-tasks">
-                                        <p>No tasks found! Complete a study session to generate review tasks.</p>
+                    <div className="section-content productivity-content">
+                        <div className="main-content-area">
+                            {hasStudyHistory ? (
+                                <div className="dashboard-card">
+                                    <AIRecommendations />
+                                </div>
+                            ) : (
+                                <div className="dashboard-card">
+                                    <div className="ai-recommendations-placeholder">
+                                        <h3>AI Study Recommendations</h3>
+                                        <p>You will be given personalized suggestions after learning some topics</p>
                                         <button 
                                             onClick={() => setActiveSection('study')}
-                                            className="add-tasks-btn"
+                                            className="start-studying-btn"
                                         >
-                                            Start Studying
+                                            Start Learning Now
                                         </button>
                                     </div>
+                                </div>
+                            )}
+
+                            <div className="productivity-chart dashboard-card">
+                                <ProductivityChart /> 
+                            </div>
+                            
+                            <div className="urgent-tasks dashboard-card">
+                                <div className="tasks-header">
+                                    <h3>Learning Tasks ({incompleteTasksCount})</h3>
+                                    <small>Calendar sessions + Smart reviews</small>
+                                </div>
+                                
+                                {hasAnyTasks ? (
+                                    <div className="task-categories">
+                                        <button 
+                                            className={`category-filter ${activeTaskFilter === 'all' ? 'active' : ''}`}
+                                            onClick={() => setActiveTaskFilter('all')}
+                                        >
+                                            All Tasks
+                                        </button>
+                                        {userHasReviewTasks && (
+                                            <>
+                                                <button 
+                                                    className={`category-filter ${activeTaskFilter === 'review' ? 'active' : ''}`}
+                                                    onClick={() => setActiveTaskFilter('review')}
+                                                >
+                                                    Review Tasks
+                                                </button>
+                                                <button 
+                                                    className={`category-filter ${activeTaskFilter === 'practice' ? 'active' : ''}`}
+                                                    onClick={() => setActiveTaskFilter('practice')}
+                                                >
+                                                    Practice Tasks
+                                                </button>
+                                                <button 
+                                                    className={`category-filter ${activeTaskFilter === 'quiz' ? 'active' : ''}`}
+                                                    onClick={() => setActiveTaskFilter('quiz')}
+                                                >
+                                                    Self Assessments
+                                                </button>
+                                            </>
+                                        )}
+                                        {userHasCalendarTasks && (
+                                            <button 
+                                                className={`category-filter ${activeTaskFilter === 'calendar' ? 'active' : ''}`}
+                                                onClick={() => setActiveTaskFilter('calendar')}
+                                            >
+                                                Calendar Sessions
+                                            </button>
+                                        )}
+                                    </div>
+                                ) : null}
+                                
+                                <div className="task-cards-container">
+                                    {hasAnyTasks ? (
+                                        filteredTasks.length > 0 ? (
+                                            filteredTasks.map(task => (
+                                                <StudyTaskCard
+                                                    key={task.id}
+                                                    {...task}
+                                                    onToggleComplete={handleToggleComplete}
+                                                    onViewDetails={handleViewDetails}
+                                                    taskType={task.type || 'regular'}
+                                                />
+                                            ))
+                                        ) : (
+                                            <div className="no-tasks">
+                                                <p>No tasks match the current filter.</p>
+                                                <button 
+                                                    onClick={() => setActiveTaskFilter('all')}
+                                                    className="add-tasks-btn"
+                                                >
+                                                    Show All Tasks
+                                                </button>
+                                            </div>
+                                        )
+                                    ) : (
+                                        <div className="no-tasks">
+                                            <p>No tasks yet! Schedule study sessions in calendar or start studying to generate tasks.</p>
+                                            <div className="no-tasks-actions">
+                                                <button 
+                                                    onClick={() => setActiveSection('study')}
+                                                    className="add-tasks-btn"
+                                                >
+                                                    Start Studying
+                                                </button>
+                                                <button 
+                                                    onClick={() => document.querySelector('.add-event-button')?.click()}
+                                                    className="add-tasks-btn secondary"
+                                                >
+                                                    Schedule Session
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* STUDY HISTORY AND SCHEDULE TOGETHER IN MAIN CONTENT */}
+                            <div className="history-schedule-container">
+                                {hasStudyHistory && (
+                                    <div className="study-history dashboard-card">
+                                        <StudyHistory />
+                                    </div>
                                 )}
+                                
+                                <div className="study-schedule dashboard-card">
+                                    <ScheduleCalendar />
+                                </div>
                             </div>
                         </div>
 
-                        <div className="study-history dashboard-card">
-                            <StudyHistory />
-                        </div>
-
-                        <div className="right-schedule">
-                            <ScheduleCalendar />
+                        <div className="sidebar-content">
+                            <Achievements 
+                                studyHistory={safeJSONParse(localStorage.getItem(`studyHistory_${getCurrentUserId()}`), [])}
+                                tasks={tasks}
+                            />
                         </div>
                     </div>
                 )}
@@ -731,9 +884,76 @@ function Dashboard({ logout }) {
                                             {copySuccess}
                                         </div>
                                     )}
+
+                                    {showStudyToolsRedirect && (
+                                        <div className="redirect-message success-message">
+                                            <strong>Great! Study plan generated successfully!</strong>
+                                            <p>Redirecting to Study Tools in 5 seconds to generate notes, quizzes, and flashcards...</p>
+                                            <button 
+                                                onClick={() => {
+                                                    setActiveSection('tools');
+                                                    setShowStudyToolsRedirect(false);
+                                                    setTimeout(() => {
+                                                        const studyToolsSection = document.querySelector('.ai-study-tools');
+                                                        if (studyToolsSection) {
+                                                            studyToolsSection.scrollIntoView({ behavior: 'smooth' });
+                                                        }
+                                                    }, 300);
+                                                }}
+                                                className="redirect-now-btn"
+                                            >
+                                                Go to Study Tools Now
+                                            </button>
+                                        </div>
+                                    )}
                                     
-                                    <div className="study-plan-output">
-                                        {generatedContent}
+                                    <div className="study-plan-output styled-content">
+                                        {generatedContent.split('\n').map((line, index) => {
+                                            const trimmedLine = line.trim();
+                                            
+                                            if (index === 0 || trimmedLine.toUpperCase() === trimmedLine) {
+                                                return (
+                                                    <h4 key={index} className="content-header-line main-header">
+                                                        {trimmedLine}
+                                                    </h4>
+                                                );
+                                            }
+                                            else if (trimmedLine.match(/^(\d+\.|#+|\*\*|—|-|\*)\s/) || 
+                                                     trimmedLine.match(/^[A-Z][^a-z]{10,}/) ||
+                                                     trimmedLine.endsWith(':')) {
+                                                return (
+                                                    <h4 key={index} className="content-header-line section-header">
+                                                        {trimmedLine.replace(/^(\d+\.|#+|\*\*|—|-|\*)\s*/, '')}
+                                                    </h4>
+                                                );
+                                            }
+                                            else if (trimmedLine.match(/^[-•*]\s/)) {
+                                                return (
+                                                    <div key={index} className="content-list-item">
+                                                        <span className="bullet">•</span>
+                                                        <span>{trimmedLine.replace(/^[-•*]\s/, '')}</span>
+                                                    </div>
+                                                );
+                                            }
+                                            else if (trimmedLine.match(/^\d+\.\s/)) {
+                                                return (
+                                                    <div key={index} className="content-numbered-item">
+                                                        <span className="number">{trimmedLine.match(/^\d+/)[0]}.</span>
+                                                        <span>{trimmedLine.replace(/^\d+\.\s/, '')}</span>
+                                                    </div>
+                                                );
+                                            }
+                                            else if (trimmedLine) {
+                                                return (
+                                                    <p key={index} className="content-paragraph">
+                                                        {trimmedLine}
+                                                    </p>
+                                                );
+                                            }
+                                            else {
+                                                return <div key={index} className="content-empty-line"></div>;
+                                            }
+                                        })}
                                     </div>
                                 </div>
                             )}
@@ -743,6 +963,16 @@ function Dashboard({ logout }) {
 
                 {activeSection === 'tools' && (
                     <div className="section-content">
+                        {showStudyToolsRedirect && (
+                            <div className="dashboard-card">
+                                <div className="welcome-to-tools success-message">
+                                    <h3>Welcome to Study Tools</h3>
+                                    <p>Now you can generate detailed notes, quizzes, and flashcards for your topic: <strong>{selectedTopic}</strong></p>
+                                    <p>Use the tools below to enhance your learning experience</p>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="dashboard-card">
                             <AITutor />
                         </div>

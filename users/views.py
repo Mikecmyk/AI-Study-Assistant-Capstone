@@ -7,14 +7,14 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from rest_framework.permissions import AllowAny  # ADD THIS IMPORT
+from rest_framework.permissions import AllowAny
 from .serializers import UserSerializer
 
 class RegisterView(APIView):
     """
     Custom view for user registration.
     """
-    permission_classes = [AllowAny]  # ADD THIS LINE
+    permission_classes = [AllowAny]
     
     def post(self, request, format=None):
         # Make sure we have a username (use email if not provided)
@@ -40,8 +40,9 @@ class RegisterView(APIView):
 class LoginView(ObtainAuthToken):
     """
     Custom login view that accepts email instead of username.
+    Returns user role information for admin detection.
     """
-    permission_classes = [AllowAny]  # ADD THIS LINE
+    permission_classes = [AllowAny]
     
     def post(self, request, *args, **kwargs):
         # Get email and password from request
@@ -72,7 +73,9 @@ class LoginView(ObtainAuthToken):
                 'token': token.key,
                 'user_id': user.id,
                 'email': user.email,
-                'username': user.username
+                'username': user.username,
+                'is_staff': user.is_staff,
+                'is_superuser': user.is_superuser
             })
         else:
             return Response(

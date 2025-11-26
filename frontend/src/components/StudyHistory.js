@@ -1,22 +1,32 @@
 import React, { useState, useEffect } from 'react';
 
-// Get current user ID for data isolation - FIXED VERSION
 const getCurrentUserId = () => {
   try {
     const userData = localStorage.getItem('user');
     if (!userData) return 'anonymous';
     
-    // Try to parse as JSON first
     try {
       const user = JSON.parse(userData);
       return user.id || user.user_id || 'anonymous';
     } catch (e) {
-      // If it's not JSON, return the string directly or a hash of it
       return userData;
     }
   } catch (error) {
     console.error('Error getting user ID:', error);
     return 'anonymous';
+  }
+};
+
+const safeJSONParse = (data, defaultValue = []) => {
+  try {
+    if (!data || data === 'null' || data === 'undefined') {
+      return defaultValue;
+    }
+    const parsed = JSON.parse(data);
+    return parsed || defaultValue;
+  } catch (error) {
+    console.warn('JSON parse error, returning default:', error);
+    return defaultValue;
   }
 };
 
@@ -35,7 +45,7 @@ const StudyHistory = () => {
             const userId = getCurrentUserId();
             const storageKey = `studyHistory_${userId}`;
             const storedHistory = localStorage.getItem(storageKey);
-            const history = storedHistory ? JSON.parse(storedHistory) : [];
+            const history = storedHistory ? safeJSONParse(storedHistory, []) : [];
             
             const sortedHistory = history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
             setStudySessions(sortedHistory);

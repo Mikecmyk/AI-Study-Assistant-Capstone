@@ -1,47 +1,149 @@
-// AdminAnalytics.js - NEW COMPONENT
-import React from 'react';
+// src/Admin/AdminAnalytics.js - COMPLETE WITH ALL STYLES
+
+import React, { useState, useEffect, useCallback } from 'react';
+import api from '../api';
 
 function AdminAnalytics() {
-    const analyticsData = {
-        totalSessions: 1247,
-        activeLearners: 89,
-        popularTopic: "Mathematics: Calculus",
-        avgStudyDuration: "45 mins",
-        completionRate: "68%",
-        totalTopics: 42,
-        totalCourses: 15
+    const [analyticsData, setAnalyticsData] = useState({
+        totalSessions: 0,
+        activeLearners: 0,
+        popularTopic: "Loading...",
+        avgStudyDuration: "0 mins",
+        completionRate: "0%",
+        totalTopics: 0,
+        totalCourses: 0,
+        totalUsers: 0,
+        recentUsers: 0
+    });
+    const [recentActivities, setRecentActivities] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchAnalyticsData = useCallback(async () => {
+        try {
+            const response = await api.get('/admin/analytics/');
+            setAnalyticsData(response.data);
+            setError(null);
+        } catch (err) {
+            console.error('Error fetching analytics:', err);
+            setError('Failed to load analytics data from server');
+            // Fallback to localStorage data
+            loadAnalyticsFromLocalStorage();
+        }
+    }, []);
+
+    const fetchRecentActivities = useCallback(async () => {
+        try {
+            const response = await api.get('/admin/recent-activities/');
+            setRecentActivities(response.data);
+            setError(null);
+        } catch (err) {
+            console.error('Error fetching recent activities:', err);
+            // Fallback to localStorage data
+            loadRecentActivitiesFromLocalStorage();
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchAnalyticsData();
+        fetchRecentActivities();
+    }, [fetchAnalyticsData, fetchRecentActivities]);
+
+    const loadAnalyticsFromLocalStorage = () => {
+        // Fallback to localStorage data
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const studySessions = JSON.parse(localStorage.getItem('study_sessions') || '[]');
+        
+        setAnalyticsData({
+            totalSessions: studySessions.length,
+            activeLearners: users.filter(user => !user.is_staff).length,
+            popularTopic: "Mathematics: Calculus",
+            avgStudyDuration: "45 mins",
+            completionRate: "68%",
+            totalTopics: 42,
+            totalCourses: 15,
+            totalUsers: users.length,
+            recentUsers: 0
+        });
     };
+
+    const loadRecentActivitiesFromLocalStorage = () => {
+        // Fallback to localStorage data
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const activities = users.slice(-3).map(user => ({
+            type: 'user_registered',
+            message: `New user registered: ${user.username}`,
+            timestamp: user.date_joined || new Date().toISOString(),
+            user: user.username
+        }));
+        
+        setRecentActivities(activities);
+    };
+
+    const formatTimeAgo = (timestamp) => {
+        const now = new Date();
+        const time = new Date(timestamp);
+        const diffInHours = Math.floor((now - time) / (1000 * 60 * 60));
+        
+        if (diffInHours < 1) return 'Just now';
+        if (diffInHours < 24) return `${diffInHours} hours ago`;
+        
+        const diffInDays = Math.floor(diffInHours / 24);
+        return `${diffInDays} days ago`;
+    };
+
+    if (loading) {
+        return (
+            <div style={containerStyle}>
+                <div style={loadingStyle}>Loading analytics data...</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div style={containerStyle}>
+                <div style={errorStyle}>
+                    {error}
+                    <br />
+                    <small>Showing fallback data</small>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div style={containerStyle}>
             <header style={headerStyle}>
                 <h2 style={titleStyle}>Learning Analytics Dashboard</h2>
-                <p style={subtitleStyle}>Monitor learning progress and platform engagement</p>
+                <p style={subtitleStyle}>Real-time platform analytics and user engagement</p>
             </header>
 
             <div style={metricsGridStyle}>
                 <div style={metricCardStyle}>
-                    <h3>Total Study Sessions</h3>
-                    <p style={metricValueStyle}>{analyticsData.totalSessions}</p>
-                    <p style={metricTrendStyle}>12% this month</p>
+                    <h3>Total Users</h3>
+                    <p style={metricValueStyle}>{analyticsData.totalUsers}</p>
+                    <p style={metricTrendStyle}>{analyticsData.recentUsers} new this week</p>
                 </div>
                 
                 <div style={metricCardStyle}>
                     <h3>Active Learners</h3>
                     <p style={metricValueStyle}>{analyticsData.activeLearners}</p>
-                    <p style={metricTrendStyle}>8% this week</p>
+                    <p style={metricTrendStyle}>Currently learning</p>
                 </div>
                 
                 <div style={metricCardStyle}>
-                    <h3>Most Popular Topic</h3>
-                    <p style={metricValueStyle}>{analyticsData.popularTopic}</p>
-                    <p style={metricTrendStyle}>Mathematics</p>
+                    <h3>Study Sessions</h3>
+                    <p style={metricValueStyle}>{analyticsData.totalSessions}</p>
+                    <p style={metricTrendStyle}>Total completed</p>
                 </div>
                 
                 <div style={metricCardStyle}>
                     <h3>Avg Study Duration</h3>
                     <p style={metricValueStyle}>{analyticsData.avgStudyDuration}</p>
-                    <p style={metricTrendStyle}>Consistent engagement</p>
+                    <p style={metricTrendStyle}>Per session</p>
                 </div>
             </div>
 
@@ -55,38 +157,40 @@ function AdminAnalytics() {
                 </div>
                 
                 <div style={statCardStyle}>
-                    <h4>Total Topics</h4>
+                    <h4>Available Topics</h4>
                     <p style={statValueStyle}>{analyticsData.totalTopics}</p>
-                    <p style={statLabelStyle}>Available for study</p>
+                    <p style={statLabelStyle}>For study</p>
                 </div>
                 
                 <div style={statCardStyle}>
-                    <h4>Total Courses</h4>
+                    <h4>Learning Courses</h4>
                     <p style={statValueStyle}>{analyticsData.totalCourses}</p>
-                    <p style={statLabelStyle}>Structured learning paths</p>
+                    <p style={statLabelStyle}>Structured paths</p>
                 </div>
             </div>
 
             <div style={activitySectionStyle}>
-                <h3>Recent Activity</h3>
+                <h3>Recent Platform Activities</h3>
                 <div style={activityListStyle}>
-                    <div style={activityItemStyle}>
-                        <span>User "JohnDoe" completed "Physics: Quantum Mechanics"</span>
-                        <span style={activityTimeStyle}>2 hours ago</span>
-                    </div>
-                    <div style={activityItemStyle}>
-                        <span>New topic "Computer Science: Machine Learning" was added</span>
-                        <span style={activityTimeStyle}>5 hours ago</span>
-                    </div>
-                    <div style={activityItemStyle}>
-                        <span>User "JaneSmith" was promoted to Admin</span>
-                        <span style={activityTimeStyle}>1 day ago</span>
-                    </div>
+                    {recentActivities.length > 0 ? (
+                        recentActivities.map((activity, index) => (
+                            <div key={index} style={activityItemStyle}>
+                                <span style={activityMessageStyle}>{activity.message}</span>
+                                <span style={activityTimeStyle}>{formatTimeAgo(activity.timestamp)}</span>
+                            </div>
+                        ))
+                    ) : (
+                        <div style={noActivitiesStyle}>
+                            <p>No recent activities recorded</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
     );
 }
+
+// ========== ALL CSS STYLES ==========
 
 const containerStyle = {
     padding: '30px',
@@ -203,10 +307,42 @@ const activityItemStyle = {
     backgroundColor: '#f8f9fa'
 };
 
+const activityMessageStyle = {
+    flex: 1
+};
+
 const activityTimeStyle = {
     marginLeft: 'auto',
     color: '#7f8c8d',
     fontSize: '0.9em'
+};
+
+const loadingStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '200px',
+    fontSize: '1.2em',
+    color: '#7f8c8d'
+};
+
+const errorStyle = {
+    color: '#e74c3c',
+    textAlign: 'center',
+    padding: '20px',
+    backgroundColor: '#ffeaa7',
+    borderRadius: '8px',
+    border: '1px solid #fdcb6e',
+    marginBottom: '20px'
+};
+
+const noActivitiesStyle = {
+    textAlign: 'center',
+    padding: '40px 20px',
+    color: '#7f8c8d',
+    backgroundColor: '#f8f9fa',
+    border: '2px dashed #e1e8ed',
+    borderRadius: '8px'
 };
 
 export default AdminAnalytics;

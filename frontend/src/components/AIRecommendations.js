@@ -1,24 +1,81 @@
-// AIRecommendations.js
 import React, { useState, useEffect } from 'react';
 import api from '../api';
 import './Dashboard.css';
 
+const getCurrentUserId = () => {
+  try {
+    const userData = localStorage.getItem('user');
+    if (!userData) return 'anonymous';
+    
+    try {
+      const user = JSON.parse(userData);
+      return user.id || user.user_id || 'anonymous';
+    } catch (e) {
+      return userData;
+    }
+  } catch (error) {
+    console.error('Error getting user ID:', error);
+    return 'anonymous';
+  }
+};
+
 const AIRecommendations = () => {
     const [recommendations, setRecommendations] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState('suggestions');
+    const [hasEnoughData, setHasEnoughData] = useState(false);
+
+    const checkStudyData = () => {
+        const userId = getCurrentUserId();
+        const storageKey = `studyHistory_${userId}`;
+        const studyHistory = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        
+        const recentSessions = studyHistory.filter(session => {
+            const sessionDate = new Date(session.timestamp);
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            return sessionDate > oneWeekAgo;
+        });
+
+        if (recentSessions.length >= 2) {
+            setHasEnoughData(true);
+            if (!isLoading) {
+                generateRecommendations();
+            }
+        } else {
+            setHasEnoughData(false);
+            setError('Complete at least 2 study sessions to get AI recommendations');
+        }
+    };
 
     useEffect(() => {
-        generateRecommendations();
+        checkStudyData();
+        
+        // Listen for study session completion events
+        const handleStudySessionCompleted = () => {
+            setTimeout(() => {
+                checkStudyData();
+            }, 500);
+        };
+
+        window.addEventListener('studySessionCompleted', handleStudySessionCompleted);
+        
+        return () => {
+            window.removeEventListener('studySessionCompleted', handleStudySessionCompleted);
+        };
     }, []);
 
     const generateRecommendations = async () => {
+        if (!hasEnoughData) return;
+        
         setIsLoading(true);
         setError('');
 
         try {
-            const studyHistory = JSON.parse(localStorage.getItem('studyHistory') || '[]');
+            const userId = getCurrentUserId();
+            const storageKey = `studyHistory_${userId}`;
+            const studyHistory = JSON.parse(localStorage.getItem(storageKey) || '[]');
             
             const oneWeekAgo = new Date();
             oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -34,7 +91,7 @@ const AIRecommendations = () => {
             setRecommendations(aiRecommendations);
         } catch (err) {
             console.error('Recommendation error:', err);
-            setError('Failed to generate recommendations. Using fallback suggestions.');
+            setError('Failed to generate recommendations. Complete more study sessions for better suggestions.');
             setRecommendations(getFallbackRecommendations());
         } finally {
             setIsLoading(false);
@@ -176,13 +233,15 @@ const AIRecommendations = () => {
         alert(`Let's schedule study time for: ${rec.title}\n\nSwitch to Calendar tab to plan this session.`);
     };
 
-    if (isLoading) {
+    if (!hasEnoughData) {
         return (
             <div className="ai-recommendations">
                 <h3>AI Study Recommendations</h3>
-                <div className="loading-recommendations">
-                    <div className="loading-spinner"></div>
-                    <p>Analyzing your learning patterns...</p>
+                <div className="insufficient-data">
+                    <p>Complete at least 2 study sessions to unlock personalized AI recommendations</p>
+                    <button className="start-studying-btn">
+                        Start Studying Now
+                    </button>
                 </div>
             </div>
         );
