@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from '../api';
 import './Dashboard.css';
 
@@ -9,6 +9,7 @@ function Login({ onLoginSuccess }) {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => { 
         e.preventDefault();
@@ -82,6 +83,10 @@ function Login({ onLoginSuccess }) {
         }
     };
 
+    const handleGoHome = () => {
+        navigate('/');
+    };
+
     return (
         <div className="auth-container">
             <div className="auth-card">
@@ -118,6 +123,16 @@ function Login({ onLoginSuccess }) {
                 </div>
 
                 <div className="auth-form-side">
+                    {/* ADDED HOME BUTTON */}
+                    <div className="auth-header-actions">
+                        <button 
+                            onClick={handleGoHome}
+                            className="home-button"
+                        >
+                             Back to Home
+                        </button>
+                    </div>
+
                     <div className="mobile-brand">
                         <div className="mobile-brand-header">
                             <div className="mobile-brand-title">Zonlus</div>

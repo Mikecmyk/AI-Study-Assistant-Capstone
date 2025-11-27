@@ -97,10 +97,24 @@ function Register() {
         }
     };
 
+    const handleGoHome = () => {
+        navigate('/');
+    };
+
     return (
         <div className="auth-container">
             <div className="auth-card">
                 <div className="auth-form-side">
+                    {/* ADDED HOME BUTTON */}
+                    <div className="auth-header-actions">
+                        <button 
+                            onClick={handleGoHome}
+                            className="home-button"
+                        >
+                            ← Back to Home
+                        </button>
+                    </div>
+
                     <div className="mobile-brand">
                         <div className="mobile-brand-header">
                             <div className="brand-title">Zonlus</div>

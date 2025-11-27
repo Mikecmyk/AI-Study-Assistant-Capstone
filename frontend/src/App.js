@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Courses from './components/Courses';
 import Dashboard from './components/Dashboard';
 import AdminDashboard from './Admin/AdminDashboard';
 import LandingPage from './components/LandingPage';
 import Login from './components/Login';
 import Register from './components/Register';
+import PremiumTopics from './components/PremiumTopics';
 
 console.log('Frontend Environment Variables:', {
   API_URL: process.env.REACT_APP_API_URL,
@@ -141,11 +141,12 @@ function App() {
                         </ProtectedRoute>
                     } 
                 />
+                
                 <Route 
-                    path="/courses" 
+                    path="/premium-topics" 
                     element={
                         <ProtectedRoute adminOnly={false}>
-                            <Courses />
+                            <PremiumTopics />
                         </ProtectedRoute>
                     } 
                 />

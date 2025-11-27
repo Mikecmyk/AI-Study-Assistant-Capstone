@@ -1,4 +1,4 @@
-// StudyTaskCard.js - UPDATED WITH TASK TYPE SUPPORT
+// StudyTaskCard.js - UPDATED WITH UNDO FUNCTIONALITY
 import React from 'react';
 
 const StudyTaskCard = ({ 
@@ -14,32 +14,7 @@ const StudyTaskCard = ({
     description 
 }) => {
     
-    // Determine the border color based on difficulty
-    let color;
-    switch (difficulty.toLowerCase()) {
-        case 'high':
-            color = '#e74c3c';
-            break;
-        case 'mid':
-            color = '#f1c40f';
-            break;
-        case 'easy':
-        default:
-            color = '#2ecc71';
-            break;
-    }
-
-    // Determine task type styling
-    const getTaskTypeClass = () => {
-        switch (taskType) {
-            case 'review_task': return 'review-task';
-            case 'practice_task': return 'practice-task';
-            case 'quiz_task': return 'quiz-task';
-            case 'calendar_task': return 'calendar-task';
-            default: return 'regular-task';
-        }
-    };
-
+    // Determine task type label
     const getTaskTypeLabel = () => {
         switch (taskType) {
             case 'review_task': return 'Review';
@@ -50,42 +25,52 @@ const StudyTaskCard = ({
         }
     };
 
-    const statusText = isCompleted ? 'Completed' : `Due ${dueTime}`;
+    // Get difficulty class
+    const getDifficultyClass = () => {
+        switch (difficulty?.toLowerCase()) {
+            case 'high': return 'difficulty-high';
+            case 'mid': return 'difficulty-medium';
+            case 'medium': return 'difficulty-medium';
+            case 'easy': return 'difficulty-easy';
+            case 'low': return 'difficulty-low';
+            default: return 'difficulty-medium';
+        }
+    };
 
     return (
-        <div 
-            className={`task-card ${isCompleted ? 'completed' : ''} ${getTaskTypeClass()}`}
-            style={{ borderLeftColor: color }}
-        >
-            <div className="task-header">
-                <div className="task-type-badge">
-                    {getTaskTypeLabel()}
-                </div>
-                
-                <p className="task-title" onClick={() => onViewDetails(id)}>
-                    {title}
-                </p>
-                
-                {description && (
-                    <p className="task-description">
-                        {description}
-                    </p>
-                )}
-                
-                <div className="task-tags">
-                    <span className="tag subject-tag">{subject}</span>
-                    <span className={`tag difficulty-tag tag-${difficulty.toLowerCase()}`}>
-                        {difficulty}
-                    </span>
-                </div>
+        <div className={`task-row ${isCompleted ? 'completed-task' : ''}`}>
+            {/* Task Type Column */}
+            <div className="task-type">
+                {getTaskTypeLabel()}
             </div>
-
-            <div className="task-footer">
-                <span className="task-status">{statusText}</span>
-
+            
+            {/* Title & Description Column */}
+            <div className="task-main-info">
+                <div className="task-title" onClick={() => onViewDetails(id)}>
+                    {title}
+                </div>
+                {description && (
+                    <div className="task-description">
+                        {description}
+                    </div>
+                )}
+            </div>
+            
+            {/* Subject Column */}
+            <div className="task-subject">
+                {subject}
+            </div>
+            
+            {/* Difficulty Column */}
+            <div className={`task-difficulty ${getDifficultyClass()}`}>
+                {difficulty || 'Medium'}
+            </div>
+            
+            {/* Actions Column - Aligned Complete/Undo Button */}
+            <div className="task-actions">
                 <button 
+                    className={`complete-btn ${isCompleted ? 'completed' : ''}`}
                     onClick={() => onToggleComplete(id)}
-                    className={`toggle-button ${isCompleted ? 'completed' : 'pending'}`}
                 >
                     {isCompleted ? 'Undo' : 'Complete'}
                 </button>

@@ -1,6 +1,7 @@
-// AITutor.js
+// AITutor.js - Complete with enhanced text formatting
 import React, { useState, useRef, useEffect } from 'react';
 import api from '../api';
+import './Dashboard.css'; 
 
 const AITutor = () => {
     const [messages, setMessages] = useState([]);
@@ -9,7 +10,9 @@ const AITutor = () => {
     const [selectedSubject, setSelectedSubject] = useState('general');
     const [difficulty, setDifficulty] = useState('beginner');
     const [conversationHistory, setConversationHistory] = useState([]);
+    const [isUserScrolling, setIsUserScrolling] = useState(false);
     const messagesEndRef = useRef(null);
+    const chatContainerRef = useRef(null);
 
     const subjects = {
         'general': 'General Learning',
@@ -30,13 +33,40 @@ const AITutor = () => {
         'advanced': 'Advanced'
     };
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const scrollToBottom = (force = false) => {
+        if (force || !isUserScrolling) {
+            setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            }, 100);
+        }
+    };
+
+    const handleScroll = () => {
+        const container = chatContainerRef.current;
+        if (container) {
+            const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 10;
+            
+            if (isAtBottom) {
+                setIsUserScrolling(false);
+            } else {
+                setIsUserScrolling(true);
+            }
+        }
     };
 
     useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
+        const container = chatContainerRef.current;
+        if (container) {
+            container.addEventListener('scroll', handleScroll);
+            return () => container.removeEventListener('scroll', handleScroll);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!isUserScrolling) {
+            scrollToBottom();
+        }
+    }, [messages, isUserScrolling]);
 
     useEffect(() => {
         const welcomeMessage = {
@@ -47,6 +77,139 @@ const AITutor = () => {
         };
         setMessages([welcomeMessage]);
     }, []);
+
+    // Enhanced message formatting function
+    const formatMessage = (text) => {
+        if (!text) return null;
+
+        const lines = text.split('\n');
+        const elements = [];
+        let currentList = [];
+        let inList = false;
+
+        lines.forEach((line, index) => {
+            const trimmedLine = line.trim();
+            
+            if (!trimmedLine) {
+                if (inList && currentList.length > 0) {
+                    elements.push(
+                        <ul key={`list-${index}`} className="formatted-list">
+                            {currentList.map((item, i) => (
+                                <li key={i}>{item}</li>
+                            ))}
+                        </ul>
+                    );
+                    currentList = [];
+                    inList = false;
+                }
+                elements.push(<br key={`br-${index}`} />);
+                return;
+            }
+
+            if (trimmedLine.match(/^#{1,3}\s/) || 
+                trimmedLine.match(/^[A-Z][^.!?]*:$/) ||
+                trimmedLine.length < 60 && trimmedLine.match(/^[A-Z]/) && 
+                !trimmedLine.match(/[.!?]$/)) {
+                
+                if (inList && currentList.length > 0) {
+                    elements.push(
+                        <ul key={`list-${index}`} className="formatted-list">
+                            {currentList.map((item, i) => (
+                                <li key={i}>{item}</li>
+                            ))}
+                        </ul>
+                    );
+                    currentList = [];
+                    inList = false;
+                }
+
+                const headerText = trimmedLine.replace(/^#{1,3}\s/, '');
+                elements.push(
+                    <h4 key={`h-${index}`} className="formatted-header">
+                        {headerText}
+                    </h4>
+                );
+                return;
+            }
+
+            if (trimmedLine.match(/^[•\-*]\s/) || trimmedLine.match(/^\d+\.\s/)) {
+                const listItem = trimmedLine.replace(/^[•\-*]\s/, '').replace(/^\d+\.\s/, '');
+                currentList.push(listItem);
+                inList = true;
+                return;
+            }
+
+            if (trimmedLine.includes('**') || trimmedLine.includes('*')) {
+                const boldText = trimmedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                           .replace(/\*(.*?)\*/g, '<strong>$1</strong>');
+                elements.push(
+                    <p key={`p-${index}`} 
+                       className="formatted-paragraph"
+                       dangerouslySetInnerHTML={{ __html: boldText }}
+                    />
+                );
+                return;
+            }
+
+            if (trimmedLine.match(/^[A-Z][^.!?]*!/) || 
+                (trimmedLine.length < 100 && trimmedLine.match(/^[A-Z]/))) {
+                elements.push(
+                    <p key={`p-${index}`} className="formatted-key-point">
+                        {trimmedLine}
+                    </p>
+                );
+                return;
+            }
+
+            if (inList && currentList.length > 0) {
+                elements.push(
+                    <ul key={`list-${index}`} className="formatted-list">
+                        {currentList.map((item, i) => (
+                            <li key={i}>{item}</li>
+                        ))}
+                    </ul>
+                );
+                currentList = [];
+                inList = false;
+            }
+
+            elements.push(
+                <p key={`p-${index}`} className="formatted-paragraph">
+                    {trimmedLine}
+                </p>
+            );
+        });
+
+        if (inList && currentList.length > 0) {
+            elements.push(
+                <ul key={`list-final`} className="formatted-list">
+                    {currentList.map((item, i) => (
+                        <li key={i}>{item}</li>
+                    ))}
+                </ul>
+            );
+        }
+
+        return <div className="formatted-content">{elements}</div>;
+    };
+
+    const Message = ({ message }) => {
+        return (
+            <div
+                key={message.id}
+                className={`message ${message.sender} ${message.isError ? 'error' : ''}`}
+            >
+                <div className="message-content">
+                    {message.sender === 'tutor' && !message.isError ? (
+                        formatMessage(message.text)
+                    ) : (
+                        <div className="message-text">{message.text}</div>
+                    )}
+                    <div className="message-time">{message.timestamp}</div>
+                </div>
+            </div>
+        );
+    };
 
     const handleSendMessage = async (e) => {
         e.preventDefault();
@@ -62,6 +225,8 @@ const AITutor = () => {
         setMessages(prev => [...prev, userMessage]);
         setInputMessage('');
         setIsLoading(true);
+
+        setIsUserScrolling(false);
 
         try {
             const context = {
@@ -112,6 +277,7 @@ const AITutor = () => {
     };
 
     const saveToStudyHistory = (question, answer) => {
+        const userId = getCurrentUserId();
         const studySession = {
             id: Date.now(),
             topic: `AI Tutor: ${subjects[selectedSubject]}`,
@@ -125,10 +291,27 @@ const AITutor = () => {
             difficulty: difficulty
         };
         
-        const existingHistory = localStorage.getItem('studyHistory');
-        const history = existingHistory ? JSON.parse(existingHistory) : [];
-        const updatedHistory = [studySession, ...history].slice(0, 50);
-        localStorage.setItem('studyHistory', JSON.stringify(updatedHistory));
+        const storageKey = `studyHistory_${userId}`;
+        const existingHistory = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const updatedHistory = [studySession, ...existingHistory].slice(0, 50);
+        localStorage.setItem(storageKey, JSON.stringify(updatedHistory));
+    };
+
+    const getCurrentUserId = () => {
+        try {
+            const userData = localStorage.getItem('user');
+            if (!userData) return 'anonymous';
+            
+            try {
+                const user = JSON.parse(userData);
+                return user.id || user.user_id || 'anonymous';
+            } catch (e) {
+                return userData;
+            }
+        } catch (error) {
+            console.error('Error getting user ID:', error);
+            return 'anonymous';
+        }
     };
 
     const handleQuickQuestion = (question) => {
@@ -144,6 +327,7 @@ const AITutor = () => {
         };
         setMessages([welcomeMessage]);
         setConversationHistory([]);
+        setIsUserScrolling(false);
     };
 
     const quickQuestions = {
@@ -193,7 +377,7 @@ const AITutor = () => {
                     </select>
 
                     <button onClick={clearConversation} className="clear-chat-btn">
-                        Clear
+                        Clear Chat
                     </button>
                 </div>
             </div>
@@ -215,17 +399,12 @@ const AITutor = () => {
                 </div>
             )}
 
-            <div className="chat-messages">
+            <div 
+                className="chat-messages" 
+                ref={chatContainerRef}
+            >
                 {messages.map((message) => (
-                    <div
-                        key={message.id}
-                        className={`message ${message.sender} ${message.isError ? 'error' : ''}`}
-                    >
-                        <div className="message-content">
-                            <div className="message-text">{message.text}</div>
-                            <div className="message-time">{message.timestamp}</div>
-                        </div>
-                    </div>
+                    <Message key={message.id} message={message} />
                 ))}
                 {isLoading && (
                     <div className="message tutor">
@@ -250,6 +429,12 @@ const AITutor = () => {
                         placeholder={`Ask me anything about ${subjects[selectedSubject]}...`}
                         disabled={isLoading}
                         className="message-input"
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSendMessage(e);
+                            }
+                        }}
                     />
                     <button 
                         type="submit" 

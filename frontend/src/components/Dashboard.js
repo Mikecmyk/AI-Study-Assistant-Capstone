@@ -235,12 +235,20 @@ function Dashboard({ logout }) {
         
         const interval = setInterval(loadAllTasks, 30000);
         
+        // Listen for task updates from ScheduleCalendar
+        const handleTasksUpdated = () => {
+            loadAllTasks();
+        };
+        
+        window.addEventListener('tasksUpdated', handleTasksUpdated);
+        
         if ("Notification" in window) {
             setNotificationPermission(Notification.permission);
         }
         
         return () => {
             clearInterval(interval);
+            window.removeEventListener('tasksUpdated', handleTasksUpdated);
             setTasks([]);
         };
     }, [loadAllTasks, checkStudyHistory]);
@@ -549,7 +557,7 @@ function Dashboard({ logout }) {
         if (activeTaskFilter === 'all') return true;
         if (activeTaskFilter === 'review') return task.type === 'review_task';
         if (activeTaskFilter === 'practice') return task.type === 'practice_task';
-        if (activeTaskFilter === 'quiz') return task.type === 'quiz_task';
+        if (activeTaskFilter === 'quiz') return task.type === 'quiz_task' || task.type === 'self_assessment';
         if (activeTaskFilter === 'calendar') return task.type === 'calendar_task' || task.eventId;
         return !task.type && !task.eventId;
     });
@@ -557,6 +565,7 @@ function Dashboard({ logout }) {
     const hasAnyTasks = tasks.length > 0;
     const userHasCalendarTasks = tasks.some(task => task.type === 'calendar_task' || task.eventId);
     const userHasReviewTasks = tasks.some(task => task.type === 'review_task');
+    const userHasSelfAssessments = tasks.some(task => task.type === 'quiz_task' || task.type === 'self_assessment');
     const incompleteTasksCount = filteredTasks.filter(t => !t.isCompleted).length;
 
     if (isLoading) {
@@ -577,7 +586,7 @@ function Dashboard({ logout }) {
                 
                 <div className="sidebar-nav-links">
                     <Link to="/dashboard" className="nav-link active">Dashboard</Link>
-                    <Link to="/courses" className="nav-link">My Courses</Link>
+                     <Link to="/premium-topics" className="nav-link">Premium Topics</Link>
                 </div>
 
                 <button 
@@ -661,26 +670,28 @@ function Dashboard({ logout }) {
                                             All Tasks
                                         </button>
                                         {userHasReviewTasks && (
-                                            <>
-                                                <button 
-                                                    className={`category-filter ${activeTaskFilter === 'review' ? 'active' : ''}`}
-                                                    onClick={() => setActiveTaskFilter('review')}
-                                                >
-                                                    Review Tasks
-                                                </button>
-                                                <button 
-                                                    className={`category-filter ${activeTaskFilter === 'practice' ? 'active' : ''}`}
-                                                    onClick={() => setActiveTaskFilter('practice')}
-                                                >
-                                                    Practice Tasks
-                                                </button>
-                                                <button 
-                                                    className={`category-filter ${activeTaskFilter === 'quiz' ? 'active' : ''}`}
-                                                    onClick={() => setActiveTaskFilter('quiz')}
-                                                >
-                                                    Self Assessments
-                                                </button>
-                                            </>
+                                            <button 
+                                                className={`category-filter ${activeTaskFilter === 'review' ? 'active' : ''}`}
+                                                onClick={() => setActiveTaskFilter('review')}
+                                            >
+                                                Review Tasks
+                                            </button>
+                                        )}
+                                        {userHasReviewTasks && (
+                                            <button 
+                                                className={`category-filter ${activeTaskFilter === 'practice' ? 'active' : ''}`}
+                                                onClick={() => setActiveTaskFilter('practice')}
+                                            >
+                                                Practice Tasks
+                                            </button>
+                                        )}
+                                        {(userHasReviewTasks || userHasSelfAssessments) && (
+                                            <button 
+                                                className={`category-filter ${activeTaskFilter === 'quiz' ? 'active' : ''}`}
+                                                onClick={() => setActiveTaskFilter('quiz')}
+                                            >
+                                                Self Assessments
+                                            </button>
                                         )}
                                         {userHasCalendarTasks && (
                                             <button 
