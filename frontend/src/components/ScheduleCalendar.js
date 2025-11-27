@@ -1,4 +1,5 @@
-// ScheduleCalendar.js - Updated with better styling
+// ScheduleCalendar.js - UPDATED (No Priority, Creates Tasks)
+
 import React, { useState, useEffect } from 'react';
 
 const ScheduleCalendar = () => {
@@ -10,7 +11,6 @@ const ScheduleCalendar = () => {
         date: '',
         time: '',
         duration: '',
-        priority: 'medium',
         description: ''
     });
 
@@ -19,17 +19,76 @@ const ScheduleCalendar = () => {
     }, []);
 
     const loadEvents = () => {
-        const userId = 'anonymous'; // Replace with actual user ID
+        const userId = getCurrentUserId();
         const storageKey = `studyEvents_${userId}`;
         const savedEvents = JSON.parse(localStorage.getItem(storageKey) || '[]');
         setEvents(savedEvents);
     };
 
+    const getCurrentUserId = () => {
+        try {
+            const userData = localStorage.getItem('user');
+            if (!userData) return 'anonymous';
+            
+            try {
+                const user = JSON.parse(userData);
+                return user.id || user.user_id || 'anonymous';
+            } catch (e) {
+                return userData;
+            }
+        } catch (error) {
+            console.error('Error getting user ID:', error);
+            return 'anonymous';
+        }
+    };
+
     const saveEvents = (updatedEvents) => {
-        const userId = 'anonymous'; // Replace with actual user ID
+        const userId = getCurrentUserId();
         const storageKey = `studyEvents_${userId}`;
         localStorage.setItem(storageKey, JSON.stringify(updatedEvents));
         setEvents(updatedEvents);
+    };
+
+    const createTaskFromSession = (event) => {
+        const userId = getCurrentUserId();
+        const task = {
+            id: `session-${event.id}`,
+            title: `Study: ${event.topic}`,
+            subject: event.topic,
+            difficulty: 'Medium',
+            dueTime: formatDueDate(event.date),
+            isCompleted: false,
+            type: 'self_assessment',
+            description: event.description || `Scheduled study session for ${event.topic}`,
+            sessionDate: event.date,
+            sessionTime: event.time,
+            sessionDuration: event.duration
+        };
+
+        // Save to calendar tasks
+        const calendarStorageKey = `calendarTasks_${userId}`;
+        const existingTasks = JSON.parse(localStorage.getItem(calendarStorageKey) || '[]');
+        const updatedTasks = [...existingTasks, task];
+        localStorage.setItem(calendarStorageKey, JSON.stringify(updatedTasks));
+
+        // Trigger task refresh in parent component
+        window.dispatchEvent(new CustomEvent('tasksUpdated'));
+    };
+
+    const formatDueDate = (dateStr) => {
+        const today = new Date().toISOString().split('T')[0];
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+        if (dateStr === today) return 'Today';
+        if (dateStr === tomorrowStr) return 'Tomorrow';
+        
+        return new Date(dateStr).toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric'
+        });
     };
 
     const handleAddEvent = (e) => {
@@ -39,15 +98,21 @@ const ScheduleCalendar = () => {
             ...newEvent,
             completed: false
         };
+        
+        // Save to events
         const updatedEvents = [...events, event];
         saveEvents(updatedEvents);
+        
+        // Create corresponding task in Learning Tasks
+        createTaskFromSession(event);
+        
+        // Reset form
         setNewEvent({
             title: '',
             topic: '',
             date: '',
             time: '',
             duration: '',
-            priority: 'medium',
             description: ''
         });
         setShowAddForm(false);
@@ -81,11 +146,11 @@ const ScheduleCalendar = () => {
         <div className="schedule-calendar">
             <div className="schedule-header">
                 <h3>Study Schedule</h3>
-                <p>Plan and track your study sessions</p>
+                <p>Plan your study sessions</p>
             </div>
 
             <div className="add-session-section">
-                <h4>Add Study Session</h4>
+                <h4>Schedule Study Session</h4>
                 {!showAddForm ? (
                     <button 
                         className="add-event-button"
@@ -97,7 +162,7 @@ const ScheduleCalendar = () => {
                     <form onSubmit={handleAddEvent} className="add-event-form">
                         <div className="form-row">
                             <div className="form-group">
-                                <label>Title</label>
+                                <label>Session Title</label>
                                 <input
                                     type="text"
                                     value={newEvent.title}
@@ -107,12 +172,12 @@ const ScheduleCalendar = () => {
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Topic</label>
+                                <label>Study Topic</label>
                                 <input
                                     type="text"
                                     value={newEvent.topic}
                                     onChange={(e) => setNewEvent({...newEvent, topic: e.target.value})}
-                                    placeholder="Subject or topic"
+                                    placeholder="Subject or topic to study"
                                     required
                                 />
                             </div>
@@ -120,7 +185,7 @@ const ScheduleCalendar = () => {
                         
                         <div className="form-row">
                             <div className="form-group">
-                                <label>Date</label>
+                                <label>Study Date</label>
                                 <input
                                     type="date"
                                     value={newEvent.date}
@@ -129,7 +194,7 @@ const ScheduleCalendar = () => {
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Time</label>
+                                <label>Study Time</label>
                                 <input
                                     type="time"
                                     value={newEvent.time}
@@ -139,47 +204,35 @@ const ScheduleCalendar = () => {
                             </div>
                         </div>
                         
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Duration</label>
-                                <select
-                                    value={newEvent.duration}
-                                    onChange={(e) => setNewEvent({...newEvent, duration: e.target.value})}
-                                    required
-                                >
-                                    <option value="">Select duration</option>
-                                    <option value="30 mins">30 minutes</option>
-                                    <option value="1 hour">1 hour</option>
-                                    <option value="1.5 hours">1.5 hours</option>
-                                    <option value="2 hours">2 hours</option>
-                                    <option value="3 hours">3 hours</option>
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Priority</label>
-                                <select
-                                    value={newEvent.priority}
-                                    onChange={(e) => setNewEvent({...newEvent, priority: e.target.value})}
-                                >
-                                    <option value="low">Low</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="high">High</option>
-                                </select>
-                            </div>
+                        <div className="form-group">
+                            <label>Study Duration</label>
+                            <select
+                                value={newEvent.duration}
+                                onChange={(e) => setNewEvent({...newEvent, duration: e.target.value})}
+                                required
+                            >
+                                <option value="">Select duration</option>
+                                <option value="30 mins">30 minutes</option>
+                                <option value="1 hour">1 hour</option>
+                                <option value="1.5 hours">1.5 hours</option>
+                                <option value="2 hours">2 hours</option>
+                                <option value="3 hours">3 hours</option>
+                            </select>
                         </div>
                         
                         <div className="form-group">
-                            <label>Description (Optional)</label>
+                            <label>Study Goals (Optional)</label>
                             <textarea
                                 value={newEvent.description}
                                 onChange={(e) => setNewEvent({...newEvent, description: e.target.value})}
-                                placeholder="Add any notes or specific goals..."
+                                placeholder="What do you want to achieve in this session?"
+                                rows="3"
                             />
                         </div>
                         
                         <div style={{display: 'flex', gap: '10px'}}>
                             <button type="submit" className="add-event-button">
-                                Save Session
+                                Schedule Session
                             </button>
                             <button 
                                 type="button" 
@@ -202,15 +255,9 @@ const ScheduleCalendar = () => {
                             <div key={event.id} className="session-item">
                                 <div className="session-header">
                                     <h5 className="session-topic">{event.topic}</h5>
-                                    <span className={`session-priority priority-${event.priority}`}>
-                                        {event.priority}
-                                    </span>
+                                    <span className="session-time">{event.time}</span>
                                 </div>
                                 <div className="session-details">
-                                    <div className="session-detail">
-                                        <span className="detail-label">Time</span>
-                                        <span className="detail-value">{event.time}</span>
-                                    </div>
                                     <div className="session-detail">
                                         <span className="detail-label">Duration</span>
                                         <span className="detail-value">{event.duration}</span>
@@ -237,15 +284,9 @@ const ScheduleCalendar = () => {
                             <div key={event.id} className="session-item">
                                 <div className="session-header">
                                     <h5 className="session-topic">{event.topic}</h5>
-                                    <span className={`session-priority priority-${event.priority}`}>
-                                        {event.priority}
-                                    </span>
+                                    <span className="session-date">{formatDate(event.date)}</span>
                                 </div>
                                 <div className="session-details">
-                                    <div className="session-detail">
-                                        <span className="detail-label">Date</span>
-                                        <span className="detail-value">{formatDate(event.date)}</span>
-                                    </div>
                                     <div className="session-detail">
                                         <span className="detail-label">Time</span>
                                         <span className="detail-value">{event.time}</span>
