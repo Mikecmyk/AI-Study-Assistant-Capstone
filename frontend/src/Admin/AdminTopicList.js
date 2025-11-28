@@ -1,5 +1,4 @@
-// AdminTopicList.js - FULLY FUNCTIONAL WITH FORM INTEGRATION
-
+// AdminTopicList.js - UPDATED WITH AUTO-REFRESH
 import React, { useState, useEffect } from 'react';
 import api from '../api';
 import TopicForm from './TopicForm';
@@ -82,10 +81,10 @@ function AdminTopicList() {
             <header style={headerStyle}>
                 <div>
                     <h2 style={titleStyle}>Topic Management</h2>
-                    <p style={subtitleStyle}>Create and manage learning topics for your study platform</p>
+                    <p style={subtitleStyle}>Manage all learning topics in the system</p>
                 </div>
                 <button onClick={handleAddNew} style={addButtonStyle}>
-                    Add New Topic
+                    Add New Topic via Form
                 </button>
             </header>
 
@@ -203,7 +202,7 @@ const subtitleStyle = {
 
 const addButtonStyle = { 
     padding: '12px 25px', 
-    backgroundColor: '#27ae60', 
+    backgroundColor: '#3498db', 
     color: 'white', 
     border: 'none', 
     borderRadius: '8px',
@@ -211,7 +210,7 @@ const addButtonStyle = {
     fontWeight: 'bold',
     cursor: 'pointer',
     transition: 'background-color 0.3s',
-    boxShadow: '0 2px 4px rgba(39, 174, 96, 0.3)'
+    boxShadow: '0 2px 4px rgba(52, 152, 219, 0.3)'
 };
 
 const tableWrapperStyle = { 

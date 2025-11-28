@@ -1,5 +1,7 @@
+// TopicManager.js - FIXED FREEMIUM LOGIC
 import React, { useState, useEffect } from 'react';
 import './TopicManager.css';
+import api from '../api';
 
 const predefinedSubjects = {
     "Physics": [
@@ -61,22 +63,24 @@ const predefinedSubjects = {
 // Freemium limits
 const FREEMIUM_LIMITS = {
     free: {
-        maxTopics: 5,
+        maxPersonalTopics: 3,
         maxStudySessions: 10,
         features: [
-            "5 custom topics",
-            "10 study sessions",
+            "3 personal topics",
+            "10 study sessions", 
+            "Access to all admin topics",
             "Basic AI study plans",
             "Study tools access",
             "Progress tracking"
         ]
     },
     premium: {
-        maxTopics: 999,
+        maxPersonalTopics: 999,
         maxStudySessions: 999,
         features: [
-            "Unlimited custom topics",
+            "Unlimited personal topics",
             "Unlimited study sessions",
+            "Access to all admin topics", 
             "Advanced AI explanations",
             "Priority support",
             "Export unlimited content",
@@ -98,18 +102,19 @@ const PRICING_PLANS = {
         price: 14999,
         period: "year",
         popular: true,
-        savings: 1499 * 12 - 14999 // Calculate savings
+        savings: 1499 * 12 - 14999
     }
 };
 
-function TopicManager({ onTopicAdded }) {
+function TopicManager({ onTopicAdded, isAdmin = false }) {
     const [selectedSubject, setSelectedSubject] = useState('');
     const [specificTopic, setSpecificTopic] = useState('');
     const [customTopic, setCustomTopic] = useState('');
     const [error, setError] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
-    const [userTopicCount, setUserTopicCount] = useState(0);
-    const [userPlan, setUserPlan] = useState('free');
+    const [loading, setLoading] = useState(false);
+    const [userPersonalTopicCount, setUserPersonalTopicCount] = useState(0);
+    const [userPlan, setUserPlan] = useState('free'); // Default to free
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [studySessionCount, setStudySessionCount] = useState(0);
 
@@ -130,174 +135,176 @@ function TopicManager({ onTopicAdded }) {
         }
     };
 
+    const initializeUserPlan = () => {
+        const userId = getCurrentUserId();
+        const planKey = `userPlan_${userId}`;
+        const savedPlan = localStorage.getItem(planKey);
+        
+        // If no plan exists, set to free and save it
+        if (!savedPlan) {
+            localStorage.setItem(planKey, 'free');
+            return 'free';
+        }
+        
+        return savedPlan;
+    };
+
     useEffect(() => {
-        const userId = getCurrentUserId();
-        
-        // Load user topics
-        const storageKey = `temporaryTopics_${userId}`;
-        const storedTopics = localStorage.getItem(storageKey);
-        const existingTopics = storedTopics ? JSON.parse(storedTopics) : [];
-        setUserTopicCount(existingTopics.length);
-        
-        // Load user plan
-        const savedPlan = localStorage.getItem('userPlan') || 'free';
-        setUserPlan(savedPlan);
-        
-        // Load study session count
-        const studyHistoryKey = `studyHistory_${userId}`;
-        const studyHistory = JSON.parse(localStorage.getItem(studyHistoryKey) || '[]');
-        setStudySessionCount(studyHistory.length);
-    }, []);
-
-    const canAddMoreTopics = userPlan === 'premium' || userTopicCount < FREEMIUM_LIMITS.free.maxTopics;
-    const canCreateMoreSessions = userPlan === 'premium' || studySessionCount < FREEMIUM_LIMITS.free.maxStudySessions;
-
-    const formatKSH = (amount) => {
-        return `KSH ${amount.toLocaleString()}`;
-    };
-
-    const saveTopicToStorage = (topicObject) => {
-        if (!canAddMoreTopics) {
-            setShowUpgradeModal(true);
-            return false;
+        if (!isAdmin) {
+            // Initialize user plan (ensures new users start with free)
+            const plan = initializeUserPlan();
+            setUserPlan(plan);
+            
+            // Load user personal topics count
+            const userId = getCurrentUserId();
+            const storageKey = `userPersonalTopics_${userId}`;
+            const storedTopics = localStorage.getItem(storageKey);
+            const personalTopics = storedTopics ? JSON.parse(storedTopics) : [];
+            setUserPersonalTopicCount(personalTopics.length);
+            
+            // Load study session count
+            const studyHistoryKey = `studyHistory_${userId}`;
+            const studyHistory = JSON.parse(localStorage.getItem(studyHistoryKey) || '[]');
+            setStudySessionCount(studyHistory.length);
         }
+    }, [isAdmin]);
 
-        const userId = getCurrentUserId();
-        const storageKey = `temporaryTopics_${userId}`;
-        
-        const storedTopics = localStorage.getItem(storageKey);
-        const existingTopics = storedTopics ? JSON.parse(storedTopics) : [];
-        
-        // Check if topic already exists to avoid duplicates
-        const topicExists = existingTopics.some(topic => 
-            topic.name === topicObject.name
-        );
-        
-        if (topicExists) {
-            setError("This topic already exists!");
-            return false;
-        }
-        
-        const updatedTopics = [...existingTopics, topicObject];
-        localStorage.setItem(storageKey, JSON.stringify(updatedTopics));
-        setUserTopicCount(updatedTopics.length);
-        
-        console.log('Saved topic to localStorage:', topicObject);
-        return true;
-    };
+    const canAddMorePersonalTopics = isAdmin || userPlan === 'premium' || userPersonalTopicCount < FREEMIUM_LIMITS.free.maxPersonalTopics;
 
-    const handleAddTopic = () => {
+    const handleAddTopic = async () => {
         setError('');
         setSuccessMessage('');
-        
-        if (!canCreateMoreSessions) {
-            setError("You've reached your free study session limit! Upgrade to premium for unlimited learning.");
-            setShowUpgradeModal(true);
-            return;
-        }
+        setLoading(true);
 
-        if (selectedSubject && specificTopic) {
-            const fullTopic = `${selectedSubject}: ${specificTopic}`;
-            const topicObject = {
-                id: Date.now(),
-                name: fullTopic,
-                subject: selectedSubject,
-                specificArea: specificTopic,
-                subtopics: [specificTopic],
-                isCustom: true,
-                createdAt: new Date().toISOString()
-            };
-            
-            const saved = saveTopicToStorage(topicObject);
-            
-            if (saved) {
-                onTopicAdded(topicObject);
+        try {
+            let topicName = '';
+            let description = '';
+
+            if (selectedSubject && specificTopic) {
+                topicName = `${selectedSubject}: ${specificTopic}`;
+                description = `Study topic for ${specificTopic} in ${selectedSubject}`;
+            } else if (customTopic.trim()) {
+                if (customTopic.length < 3) {
+                    setError("Please enter a more specific topic (at least 3 characters)");
+                    setLoading(false);
+                    return;
+                }
+                
+                topicName = customTopic.trim();
+                description = `Custom study topic: ${customTopic}`;
+                
+                if (customTopic.includes(':') && customTopic.split(':').length === 2) {
+                    const [detectedSubject, detectedTopic] = customTopic.split(':').map(s => s.trim());
+                    if (detectedSubject && detectedTopic) {
+                        topicName = `${detectedSubject}: ${detectedTopic}`;
+                        description = `Study topic for ${detectedTopic} in ${detectedSubject}`;
+                    }
+                }
+            } else {
+                setError("Please select a topic or enter a custom one");
+                setLoading(false);
+                return;
+            }
+
+            // For admin, save to database via API (available to all users)
+            if (isAdmin) {
+                const topicData = {
+                    name: topicName,
+                    description: description,
+                    is_active: true
+                };
+
+                const response = await api.post('/admin/topics/', topicData);
+                
+                setSuccessMessage(`Topic "${topicName}" added successfully to the system! All users can now access this topic.`);
+                
+                // Clear form
+                setSelectedSubject('');
+                setSpecificTopic('');
+                setCustomTopic('');
+                
+                // Notify parent component to refresh topic list
+                if (onTopicAdded) {
+                    onTopicAdded(response.data);
+                }
+            } else {
+                // For regular users, check freemium limits first
+                if (!canAddMorePersonalTopics) {
+                    setShowUpgradeModal(true);
+                    setLoading(false);
+                    return;
+                }
+
+                // Save personal topic to localStorage
+                const userId = getCurrentUserId();
+                const storageKey = `userPersonalTopics_${userId}`;
+                
+                const storedTopics = localStorage.getItem(storageKey);
+                const existingTopics = storedTopics ? JSON.parse(storedTopics) : [];
+                
+                const topicExists = existingTopics.some(topic => topic.name === topicName);
+                
+                if (topicExists) {
+                    setError("This topic already exists in your personal topics!");
+                    setLoading(false);
+                    return;
+                }
+                
+                const topicObject = {
+                    id: Date.now(),
+                    name: topicName,
+                    description: description,
+                    isCustom: true,
+                    isPersonal: true,
+                    createdAt: new Date().toISOString()
+                };
+                
+                const updatedTopics = [...existingTopics, topicObject];
+                localStorage.setItem(storageKey, JSON.stringify(updatedTopics));
+                setUserPersonalTopicCount(updatedTopics.length);
+                
+                setSuccessMessage(`Personal topic "${topicName}" added successfully! You can find it under "Select a topic" in your study session.`);
                 
                 setSelectedSubject('');
                 setSpecificTopic('');
                 setCustomTopic('');
                 
-                setSuccessMessage(`Topic "${fullTopic}" added successfully! You can find it under "Select a topic" in your study session.`);
-                
-                // Auto-scroll to study session after a delay
-                setTimeout(() => {
-                    const studySection = document.querySelector('.study-form');
-                    if (studySection) {
-                        studySection.scrollIntoView({ behavior: 'smooth' });
-                    }
-                }, 1500);
-            }
-            
-        } else if (customTopic.trim()) {
-            if (customTopic.length < 3) {
-                setError("Please enter a more specific topic (at least 3 characters)");
-                return;
-            }
-            
-            let topicName = customTopic.trim();
-            let subject = 'Custom';
-            let specificArea = customTopic.trim();
-            
-            if (customTopic.includes(':') && customTopic.split(':').length === 2) {
-                const [detectedSubject, detectedTopic] = customTopic.split(':').map(s => s.trim());
-                if (detectedSubject && detectedTopic) {
-                    subject = detectedSubject;
-                    specificArea = detectedTopic;
-                    topicName = `${subject}: ${specificArea}`;
+                if (onTopicAdded) {
+                    onTopicAdded(topicObject);
                 }
             }
             
-            const topicObject = {
-                id: Date.now(),
-                name: topicName,
-                subject: subject,
-                specificArea: specificArea,
-                subtopics: [specificArea],
-                isCustom: true,
-                createdAt: new Date().toISOString()
-            };
-            
-            const saved = saveTopicToStorage(topicObject);
-            
-            if (saved) {
-                onTopicAdded(topicObject);
-                
-                setCustomTopic('');
-                setSelectedSubject('');
-                setSpecificTopic('');
-                
-                setSuccessMessage(`Topic "${topicName}" added successfully! You can find it under "Select a topic" in your study session.`);
-                
-                // Auto-scroll to study session after a delay
-                setTimeout(() => {
-                    const studySection = document.querySelector('.study-form');
-                    if (studySection) {
-                        studySection.scrollIntoView({ behavior: 'smooth' });
-                    }
-                }, 1500);
-            }
-        } else {
-            setError("Please select a topic or enter a custom one");
+        } catch (err) {
+            console.error('Error adding topic:', err);
+            setError(isAdmin ? 
+                "Failed to add topic to database. Please try again." : 
+                "Failed to add topic. Please try again."
+            );
+        } finally {
+            setLoading(false);
         }
     };
 
     const handleUpgradePlan = (planType) => {
         const plan = PRICING_PLANS[planType];
         
-        // In a real app, this would integrate with a payment processor like M-Pesa
-        console.log(`Processing payment for ${plan.name}: ${formatKSH(plan.price)}`);
+        // Simulate payment processing
+        console.log(`Processing payment for ${plan.name}: KSH ${plan.price}`);
         
-        // Simulate successful payment
+        // Update user plan to premium
+        const userId = getCurrentUserId();
+        const planKey = `userPlan_${userId}`;
         setUserPlan('premium');
-        localStorage.setItem('userPlan', 'premium');
+        localStorage.setItem(planKey, 'premium');
         setShowUpgradeModal(false);
         
-        alert(`🎉 Successfully upgraded to ${plan.name}! You now have unlimited topics and study sessions.`);
+        alert(`Successfully upgraded to ${plan.name}! You can now add unlimited personal topics.`);
         
         // Clear any error messages
         setError('');
     };
 
+    // Usage Meter Component for regular users
     const UsageMeter = () => (
         <div className="usage-meter">
             <div className="meter-header">
@@ -307,15 +314,20 @@ function TopicManager({ onTopicAdded }) {
             
             <div className="meter-item">
                 <div className="meter-label">
-                    <span>Custom Topics</span>
-                    <span>{userTopicCount}/{FREEMIUM_LIMITS[userPlan].maxTopics}</span>
+                    <span>Personal Topics</span>
+                    <span>{userPersonalTopicCount}/{FREEMIUM_LIMITS[userPlan].maxPersonalTopics}</span>
                 </div>
                 <div className="meter-bar">
                     <div 
                         className="meter-fill topics-fill"
-                        style={{ width: `${(userTopicCount / FREEMIUM_LIMITS[userPlan].maxTopics) * 100}%` }}
+                        style={{ width: `${(userPersonalTopicCount / FREEMIUM_LIMITS[userPlan].maxPersonalTopics) * 100}%` }}
                     ></div>
                 </div>
+                {userPlan === 'free' && userPersonalTopicCount >= FREEMIUM_LIMITS.free.maxPersonalTopics && (
+                    <div className="limit-reached">
+                        Limit reached! Upgrade to add more topics.
+                    </div>
+                )}
             </div>
             
             <div className="meter-item">
@@ -345,11 +357,12 @@ function TopicManager({ onTopicAdded }) {
         </div>
     );
 
+    // Upgrade Modal Component
     const UpgradeModal = () => (
         <div className="modal-overlay">
             <div className="upgrade-modal">
                 <div className="modal-header">
-                    <h2> Upgrade to Premium</h2>
+                    <h2>Upgrade to Premium</h2>
                     <button 
                         onClick={() => setShowUpgradeModal(false)}
                         className="close-modal"
@@ -362,9 +375,9 @@ function TopicManager({ onTopicAdded }) {
                     <div className="upgrade-reason">
                         <h3>Unlock Unlimited Learning</h3>
                         <p>
-                            {!canAddMoreTopics 
-                                ? "You've reached your free topic limit. Upgrade to add unlimited custom topics!" 
-                                : "You're reaching your free limits. Upgrade for unlimited learning!"}
+                            {userPersonalTopicCount >= FREEMIUM_LIMITS.free.maxPersonalTopics 
+                                ? "You've reached your free personal topic limit (3 topics). Upgrade to add unlimited custom topics!" 
+                                : "Upgrade now to get unlimited personal topics and advanced features!"}
                         </p>
                     </div>
                     
@@ -377,12 +390,12 @@ function TopicManager({ onTopicAdded }) {
                                     <div className="plan-header">
                                         <h3>{plan.name}</h3>
                                         <div className="plan-price">
-                                            <span className="price">{formatKSH(plan.price)}</span>
+                                            <span className="price">KSH {plan.price.toLocaleString()}</span>
                                             <span className="period">per {plan.period}</span>
                                         </div>
                                         {plan.savings && (
                                             <div className="savings">
-                                                Save {formatKSH(plan.savings)}
+                                                Save KSH {plan.savings.toLocaleString()}
                                             </div>
                                         )}
                                     </div>
@@ -422,19 +435,94 @@ function TopicManager({ onTopicAdded }) {
                     </div>
                     
                     <div className="payment-methods">
-                        <p> Secure payment via M-Pesa, Credit Card, or Airtel Money</p>
+                        <p>Secure payment via M-Pesa, Credit Card, or Airtel Money</p>
                     </div>
                 </div>
             </div>
         </div>
     );
 
+    // Simplified Admin Interface
+    if (isAdmin) {
+        return (
+            <div className="topic-manager-admin">
+                <div className="admin-topic-form">
+                    <div className="form-group">
+                        <label>Select Subject:</label>
+                        <select 
+                            value={selectedSubject} 
+                            onChange={(e) => {
+                                setSelectedSubject(e.target.value);
+                                setSpecificTopic('');
+                                setError('');
+                                setSuccessMessage('');
+                            }}
+                            className="topic-select"
+                        >
+                            <option value="">Choose a subject...</option>
+                            {Object.keys(predefinedSubjects).map(subject => (
+                                <option key={subject} value={subject}>{subject}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {selectedSubject && (
+                        <div className="form-group">
+                            <label>Select Specific Topic:</label>
+                            <select 
+                                value={specificTopic}
+                                onChange={(e) => {
+                                    setSpecificTopic(e.target.value);
+                                    setError('');
+                                    setSuccessMessage('');
+                                }}
+                                className="topic-select"
+                            >
+                                <option value="">Choose a specific area...</option>
+                                {predefinedSubjects[selectedSubject].map(topic => (
+                                    <option key={topic} value={topic}>{topic}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
+                    <div className="form-group">
+                        <label>Or Enter Custom Topic:</label>
+                        <input
+                            type="text"
+                            placeholder="e.g., Advanced Python Programming, Digital Marketing Strategies..."
+                            value={customTopic}
+                            onChange={(e) => {
+                                setCustomTopic(e.target.value);
+                                setError('');
+                                setSuccessMessage('');
+                            }}
+                            className="topic-input"
+                        />
+                    </div>
+
+                    {error && <div className="error-message">{error}</div>}
+                    {successMessage && <div className="success-message">{successMessage}</div>}
+
+                    <button 
+                        onClick={handleAddTopic} 
+                        disabled={loading}
+                        className="add-topic-btn-admin"
+                    >
+                        {loading ? 'Adding Topic...' : 'Add Topic to System'}
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // Regular user interface with freemium features
     return (
         <div className="topic-manager">
             <div className="topic-manager-header">
                 <div className="header-main">
                     <h3>Add Learning Topic</h3>
-                    <p className="topic-instruction">Study anything you want! Add any topic that interests you.</p>
+                    <p className="topic-instruction">Add personal topics or use admin-created topics available to everyone</p>
                 </div>
                 <UsageMeter />
             </div>
@@ -480,10 +568,10 @@ function TopicManager({ onTopicAdded }) {
                 )}
 
                 <div className="form-group">
-                    <label>Or Enter Any Custom Topic:</label>
+                    <label>Or Enter Any Custom Topic (Personal):</label>
                     <input
                         type="text"
-                        placeholder="e.g., Python list comprehensions, French Revolution causes, Marketing strategies, Personal finance..."
+                        placeholder="e.g., Python list comprehensions, French Revolution causes, Marketing strategies..."
                         value={customTopic}
                         onChange={(e) => {
                             setCustomTopic(e.target.value);
@@ -493,7 +581,10 @@ function TopicManager({ onTopicAdded }) {
                         className="topic-input"
                     />
                     <small className="input-hint">
-                        You can study literally anything! Business, programming, languages, hobbies, etc.
+                        Personal topics are only visible to you. Free users can add up to {FREEMIUM_LIMITS.free.maxPersonalTopics} personal topics.
+                        {userPersonalTopicCount >= FREEMIUM_LIMITS.free.maxPersonalTopics && (
+                            <strong style={{color: '#e74c3c'}}> You've reached your free limit!</strong>
+                        )}
                     </small>
                 </div>
 
@@ -502,23 +593,13 @@ function TopicManager({ onTopicAdded }) {
 
                 <button 
                     onClick={handleAddTopic} 
-                    className={`add-topic-btn ${!canAddMoreTopics ? 'disabled' : ''}`}
-                    disabled={!canAddMoreTopics}
+                    disabled={loading || !canAddMorePersonalTopics}
+                    className={`add-topic-btn ${!canAddMorePersonalTopics ? 'disabled' : ''}`}
                 >
-                    {canAddMoreTopics ? 'Add Learning Topic' : 'Topic Limit Reached - Upgrade to Add More'}
+                    {loading ? 'Adding Topic...' : 
+                     !canAddMorePersonalTopics ? 'Personal Topic Limit Reached - Upgrade to Add More' : 
+                     'Add Personal Topic'}
                 </button>
-            </div>
-
-            <div className="topic-examples">
-                <h4> Topic Ideas:</h4>
-                <div className="example-tags">
-                    <span className="example-tag">Digital Marketing Strategies</span>
-                    <span className="example-tag">Python for Data Analysis</span>
-                    <span className="example-tag">Personal Finance Management</span>
-                    <span className="example-tag">Spanish Language Basics</span>
-                    <span className="example-tag">Startup Business Planning</span>
-                    <span className="example-tag">Machine Learning Projects</span>
-                </div>
             </div>
 
             {showUpgradeModal && <UpgradeModal />}

@@ -1,5 +1,4 @@
-// AdminDashboard.js - UPDATED WITH LOGOUT BUTTON
-
+// AdminDashboard.js - FIXED IMPORT PATH
 import React, { useState } from 'react';
 import AdminTopicList from './AdminTopicList';
 import AdminCourseList from './AdminCourseList';
@@ -7,15 +6,36 @@ import AdminUserList from './AdminUserList';
 import AdminAnalytics from './AdminAnalytics';
 import AIConfigPanel from './AIConfigPanel';
 
+// Fix the import path - adjust based on your actual file structure
+import TopicManager from '../components/TopicManager'; // If it's in components folder
+// OR
+// import TopicManager from '../TopicManager'; // If it's in src folder
+// OR
+// import TopicManager from './TopicManager'; // If you've copied it to Admin folder
+
 const AdminDashboard = () => {
     const [currentView, setCurrentView] = useState('analytics'); 
+    const [refreshTopics, setRefreshTopics] = useState(false);
 
     const renderContent = () => {
         switch (currentView) {
             case 'analytics':
                 return <AdminAnalytics />;
             case 'topics':
-                return <AdminTopicList />;
+                return (
+                    <div>
+                        <div style={topicManagerSectionStyle}>
+                            <h3 style={sectionTitleStyle}>Add New Topic</h3>
+                            <TopicManager 
+                                onTopicAdded={() => setRefreshTopics(!refreshTopics)}
+                                isAdmin={true}
+                            />
+                        </div>
+                        <div style={topicListSectionStyle}>
+                            <AdminTopicList key={refreshTopics} />
+                        </div>
+                    </div>
+                );
             case 'courses':
                 return <AdminCourseList />;
             case 'users':
@@ -140,6 +160,29 @@ const contentAreaStyle = {
     padding: '30px', 
     overflowY: 'auto',
     backgroundColor: '#ecf0f1'
+};
+
+const topicManagerSectionStyle = {
+    backgroundColor: 'white',
+    padding: '25px',
+    borderRadius: '12px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    marginBottom: '25px'
+};
+
+const sectionTitleStyle = {
+    margin: '0 0 20px 0',
+    color: '#2c3e50',
+    fontSize: '1.5em',
+    borderBottom: '2px solid #f1f3f4',
+    paddingBottom: '10px'
+};
+
+const topicListSectionStyle = {
+    backgroundColor: 'white',
+    padding: '25px',
+    borderRadius: '12px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
 };
 
 export default AdminDashboard;

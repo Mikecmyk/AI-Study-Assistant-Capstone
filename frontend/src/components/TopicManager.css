@@ -490,3 +490,134 @@
         justify-content: center;
     }
 }
+
+/* TopicManager.css - UPDATED FOR ADMIN */
+.topic-manager-admin {
+    width: 100%;
+}
+
+.admin-topic-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.admin-topic-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-topic-form label {
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 1em;
+}
+
+.topic-select, .topic-input {
+    padding: 12px;
+    border: 2px solid #e1e8ed;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: border-color 0.3s;
+}
+
+.topic-select:focus, .topic-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.add-topic-btn-admin {
+    padding: 15px 25px;
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+}
+
+.add-topic-btn-admin:hover:not(:disabled) {
+    background-color: #219a52;
+}
+
+.add-topic-btn-admin:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+}
+
+.error-message {
+    color: #e74c3c;
+    background-color: #fadbd8;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #f5b7b1;
+    font-weight: bold;
+}
+
+.success-message {
+    color: #27ae60;
+    background-color: #d5f4e6;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #a3e4bf;
+    font-weight: bold;
+}
+
+/* Existing styles for regular users */
+.topic-manager {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.topic-manager-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.header-main h3 {
+    margin: 0 0 8px 0;
+    color: #2c3e50;
+}
+
+.topic-instruction {
+    margin: 0;
+    color: #7f8c8d;
+    font-size: 0.95em;
+}
+
+.topic-input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.add-topic-btn {
+    padding: 15px 25px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.add-topic-btn:hover:not(:disabled) {
+    background-color: #2980b9;
+}
+
+.add-topic-btn:disabled {
+    background-color: #95a5a6;
+    cursor: not-allowed;
+}
+
+

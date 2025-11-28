@@ -235,7 +235,6 @@ function Dashboard({ logout }) {
         
         const interval = setInterval(loadAllTasks, 30000);
         
-        // Listen for task updates from ScheduleCalendar
         const handleTasksUpdated = () => {
             loadAllTasks();
         };
@@ -336,29 +335,51 @@ function Dashboard({ logout }) {
 
     const fetchTopics = useCallback(async () => {
         try {
-            let apiTopics = [];
+            let adminTopics = [];
+            let personalTopics = [];
             
+            // Load admin topics from API (available to all users)
             try {
                 const response = await api.get('/topics/'); 
                 if (response.data && Array.isArray(response.data)) {
-                    apiTopics = response.data;
+                    adminTopics = response.data.map(topic => ({
+                        ...topic,
+                        isAdminTopic: true,
+                        source: 'System'
+                    }));
                 } else if (response.data && response.data.topics && Array.isArray(response.data.topics)) {
-                    apiTopics = response.data.topics;
+                    adminTopics = response.data.topics.map(topic => ({
+                        ...topic,
+                        isAdminTopic: true,
+                        source: 'System'
+                    }));
                 } else if (response.data && response.data.results && Array.isArray(response.data.results)) {
-                    apiTopics = response.data.results;
+                    adminTopics = response.data.results.map(topic => ({
+                        ...topic,
+                        isAdminTopic: true,
+                        source: 'System'
+                    }));
                 }
             } catch (apiError) {
                 console.warn('API fetch failed, using localStorage only:', apiError);
             }
             
+            // Load personal topics from localStorage (user-specific)
             const userId = getCurrentUserId();
-            const storageKey = `temporaryTopics_${userId}`;
-            const tempTopics = safeJSONParse(localStorage.getItem(storageKey), []);
-            const allTopics = [...apiTopics, ...tempTopics];
+            const personalStorageKey = `userPersonalTopics_${userId}`;
+            const storedPersonalTopics = localStorage.getItem(personalStorageKey);
+            personalTopics = storedPersonalTopics ? JSON.parse(storedPersonalTopics).map(topic => ({
+                ...topic,
+                isPersonalTopic: true,
+                source: 'Personal'
+            })) : [];
+            
+            // Combine all topics - admin topics first, then personal topics
+            const allTopics = [...adminTopics, ...personalTopics];
             
             console.log('Loaded topics:', {
-                fromApi: apiTopics.length,
-                fromLocal: tempTopics.length,
+                adminTopics: adminTopics.length,
+                personalTopics: personalTopics.length,
                 total: allTopics.length
             });
             
@@ -547,10 +568,10 @@ function Dashboard({ logout }) {
 
     const clearOldTopics = () => {
         const userId = getCurrentUserId();
-        const storageKey = `temporaryTopics_${userId}`;
+        const storageKey = `userPersonalTopics_${userId}`;
         localStorage.removeItem(storageKey);
         setRefreshTopics(prev => !prev);
-        alert('Old topics cleared! Refreshing topics list...');
+        alert('Personal topics cleared! Refreshing topics list...');
     };
 
     const filteredTasks = tasks.filter(task => {
@@ -586,7 +607,7 @@ function Dashboard({ logout }) {
                 
                 <div className="sidebar-nav-links">
                     <Link to="/dashboard" className="nav-link active">Dashboard</Link>
-                     <Link to="/premium-topics" className="nav-link">Premium Topics</Link>
+                    <Link to="/premium-topics" className="nav-link">Premium Topics</Link>
                 </div>
 
                 <button 
@@ -749,7 +770,6 @@ function Dashboard({ logout }) {
                                 </div>
                             </div>
 
-                            {/* STUDY HISTORY AND SCHEDULE TOGETHER IN MAIN CONTENT */}
                             <div className="history-schedule-container">
                                 {hasStudyHistory && (
                                     <div className="study-history dashboard-card">
@@ -778,7 +798,7 @@ function Dashboard({ logout }) {
                             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px'}}>
                                 <h3>Step 1: Add Learning Topic</h3>
                                 <button onClick={clearOldTopics} className="clear-topics-btn">
-                                    Clear Old Topics
+                                    Clear Personal Topics
                                 </button>
                             </div>
                             <TopicManager onTopicAdded={handleTopicAdded} />
@@ -814,7 +834,7 @@ function Dashboard({ logout }) {
 
                                 <div className="form-group">
                                     <label>
-                                        Selected Topic:
+                                        Select Topic:
                                         <select
                                             value={selectedTopic}
                                             onChange={(e) => {
@@ -825,14 +845,46 @@ function Dashboard({ logout }) {
                                             className="topic-select"
                                         >
                                             <option value="">Select a topic...</option>
-                                            {topics.map((topic, index) => (
-                                                <option key={topic.id || index} value={topic.name || topic}>
-                                                    {topic.name || topic}
+                                            
+                                            {/* System Topics (Admin Created) */}
+                                            {topics.filter(topic => topic.isAdminTopic).length > 0 && (
+                                                <optgroup label="System Topics (Available to All)">
+                                                    {topics
+                                                        .filter(topic => topic.isAdminTopic)
+                                                        .map((topic, index) => (
+                                                            <option key={`admin-${topic.id || index}`} value={topic.name || topic}>
+                                                                {topic.name || topic} [System]
+                                                            </option>
+                                                        ))
+                                                    }
+                                                </optgroup>
+                                            )}
+                                            
+                                            {/* Personal Topics (User Created) */}
+                                            {topics.filter(topic => topic.isPersonalTopic).length > 0 && (
+                                                <optgroup label="Your Personal Topics">
+                                                    {topics
+                                                        .filter(topic => topic.isPersonalTopic)
+                                                        .map((topic, index) => (
+                                                            <option key={`personal-${topic.id || index}`} value={topic.name || topic}>
+                                                                {topic.name || topic} [Personal]
+                                                            </option>
+                                                        ))
+                                                    }
+                                                </optgroup>
+                                            )}
+                                            
+                                            {topics.length === 0 && (
+                                                <option value="" disabled>
+                                                    No topics available. Add some topics first!
                                                 </option>
-                                            ))}
+                                            )}
                                         </select>
                                     </label>
-                                    <small>Current topic: <strong>{selectedTopic || 'None selected'}</strong></small>
+                                    <small>
+                                        Current topic: <strong>{selectedTopic || 'None selected'}</strong> | 
+                                        System topics are available to all users | Personal topics are only visible to you
+                                    </small>
                                 </div>
 
                                 {availableSubtopics.length > 0 && (
